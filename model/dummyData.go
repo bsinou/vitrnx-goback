@@ -1,5 +1,10 @@
 package model
 
+import (
+	"log"
+	"time"
+)
+
 const (
 	msg1 = `
 Nous avons profité de ces longs mois d'hiver pour nous repencher sur notre fenêtre sur le monde (virtuel), et avons décidé de faire peau neuve.
@@ -122,6 +127,7 @@ func populateFakeRepo() *map[string]*Article {
 	tmp["new-website"] = &Article{
 		Id:     "new-website",
 		Tags:   "Actualités",
+		Date:   parseDate("2018-03-18"),
 		Author: "Bruno",
 		Title:  "Vivement le printemps !",
 		Desc:   "Un court message pour vous informer que le site est en court de restructuration",
@@ -131,6 +137,7 @@ func populateFakeRepo() *map[string]*Article {
 	tmp["temps-des-vacances"] = &Article{
 		Id:     "temps-des-vacances",
 		Tags:   "Actualités",
+		Date:   parseDate("2017-06-21"),
 		Author: "Marie-Madeleine",
 		Title:  "Le temps des vacances.....",
 		Desc:   "Se laisser aller à faire rien... Pourquoi pas ?",
@@ -140,6 +147,7 @@ func populateFakeRepo() *map[string]*Article {
 	tmp["body-syntax"] = &Article{
 		Id:     "body-syntax",
 		Tags:   "Réflexions",
+		Date:   parseDate("2018-03-19"),
 		Author: "Bruno",
 		Title:  "Markdown ou comment donner un style à ses textes",
 		Desc:   "Un petit rappel de la syntaxe des blogs.",
@@ -149,8 +157,9 @@ func populateFakeRepo() *map[string]*Article {
 	tmp["lecon-de-vie"] = &Article{
 		Id:     "lecon-de-vie",
 		Tags:   "Réflexions",
+		Date:   parseDate("2017-07-04"),
 		Author: "Marie-Madeleine",
-		Title:  "Leçons de vie, Juillet 2017",
+		Title:  "Leçons de vie",
 		Desc:   "\"Quand on ne peut pas ajouter des jours à la vie on peut toujours ajouter de la vie aux jours.\" \nPr Bernard",
 		Body:   msg4,
 	}
@@ -158,11 +167,20 @@ func populateFakeRepo() *map[string]*Article {
 	tmp["accords-tolteques"] = &Article{
 		Id:     "accords-tolteques",
 		Tags:   "Réflexions",
+		Date:   parseDate("2016-10-21"),
 		Author: "Marie-Madeleine",
-		Title:  "Les Accords Toltèques, le 21 octobre 2016",
+		Title:  "Les Accords Toltèques",
 		Desc:   "A méditer encore et encore, les 4 accords Toltèques (Don Miguel Ruiz)",
 		Body:   msg5,
 	}
 
 	return &tmp
+}
+
+func parseDate(dateStr string) time.Time {
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		log.Fatalf("cannot parse date [%s], [2006-01-02] format expected", dateStr)
+	}
+	return date
 }
