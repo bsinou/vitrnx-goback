@@ -35,9 +35,16 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, world!"))
 }
 
+func checkCredentials(h http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r 
+                                          *http.Request) {
+    // Call google API here
+    h.ServeHTTP(w, r) // call original
+  })
+}
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.HandleFunc("/hello", sayHello)
+	myRouter.HandleFunc("/hello", checkCredentials(sayHello))
 	myRouter.HandleFunc("/posts", model.GetArticleByTag)
 	myRouter.HandleFunc("/posts/{id}", model.GetSingleArticle)
 	myRouter.HandleFunc("/by-tag/{tag}", model.GetArticleByTag)
