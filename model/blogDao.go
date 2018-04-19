@@ -52,7 +52,7 @@ func GetArticleByTag(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeCrossDomainHeaders(w, r)
+	// writeCrossDomainHeaders(w, r)
 	json.NewEncoder(w).Encode(results)
 }
 
@@ -68,35 +68,6 @@ func GetSingleArticle(w http.ResponseWriter, r *http.Request) {
 		art = *val
 	}
 
-	writeCrossDomainHeaders(w, r)
+	// writeCrossDomainHeaders(w, r)
 	json.NewEncoder(w).Encode(art)
-}
-
-// FIXME what are the consequences in term of security
-// see https://stackoverflow.com/questions/22363268/cross-origin-request-blocked
-func writeCrossDomainHeaders(w http.ResponseWriter, req *http.Request) {
-
-	w.Header().Set("Access-Control-Allow-Credentials", "True")
-
-	// Cross domain headers
-	if acrh, ok := req.Header["Access-Control-Request-Headers"]; ok {
-		w.Header().Set("Access-Control-Allow-Headers", acrh[0])
-		fmt.Println("Set ac allow headers for: " + acrh[0])
-	}
-
-	if acao, ok := req.Header["Access-Control-Allow-Origin"]; ok {
-		w.Header().Set("Access-Control-Allow-Origin", acao[0])
-		fmt.Println("Set ac allow origin for: " + acao[0])
-	} else {
-		if _, oko := req.Header["Origin"]; oko {
-			w.Header().Set("Access-Control-Allow-Origin", req.Header["Origin"][0])
-			fmt.Println("Set ac allow origin via origin header for: " + req.Header["Origin"][0])
-		} else {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			fmt.Println("Fall back,  ac allow origin for: *")
-		}
-	}
-
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	w.Header().Set("Connection", "Close")
 }
