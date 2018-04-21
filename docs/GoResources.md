@@ -14,9 +14,13 @@ If you are already familliar with code programming, going first through the reso
 
 A selection of good articles that focuses on a specific feature of the Go language, with another point of view.
 
-- [Build your own web application in Go](https://www.nicolasmerouze.com/build-web-framework-golang/)
+- [Build You Own Web Framework In Go](https://www.nicolasmerouze.com/build-web-framework-golang/)
 - About [Mutexes](https://kylewbanks.com/blog/tutorial-synchronizing-state-with-mutexes-golang)
 - About [wrappers](https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702), that we use to manage http requests.
+
+Some videos
+
+- [MongoDB + GO by Steve Francia](http://spf13.com/presentation/mongodb-and-go/)
 
 ## HowTo-s
 

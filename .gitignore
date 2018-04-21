@@ -12,5 +12,12 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+
+# our additions
 /.project
 /vitrnX
+/debug
+/main
+/data/
+
