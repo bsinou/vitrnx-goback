@@ -9,7 +9,8 @@ const (
 
 // Post model
 type Post struct {
-	ID     bson.ObjectId `json:"id,omitempty" bson:"id,omitempty"`
+	// Why isnt the ID automatically generated and serialized in JSON
+	ID     bson.ObjectId `json:"id,omitempty" binding:"required" bson:"id,omitempty"`
 	Path   string        `json:"path" binding:"required" bson:"path"`
 	Title  string        `json:"title" binding:"required" bson:"title"`
 	Author string        `json:"author" bson:"author"`

@@ -45,15 +45,16 @@ func declareRoutes(r *gin.Engine) {
 		// REST
 		// api.GET("/new", Connect(t), handler.NewPost)
 		api.POST("/posts", Connect(t), handler.CreatePost)
-		api.GET("/posts/:_id", Connect(t), handler.EditPost)
+		api.GET("/posts/:id", Connect(t), handler.EditPost)
 		api.GET("/posts", Connect(t), handler.ListPosts)
-		api.POST("/posts/:_id", Connect(t), handler.UpdatePost)
-		api.DELETE("/posts/:_id", Connect(t), handler.DeletePost)
+		api.POST("/posts/:id", Connect(t), handler.UpdatePost)
+		api.DELETE("/posts/:id", Connect(t), handler.DeletePost)
 	}
 }
 
 func optionsUser(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
 	c.Next()
 }

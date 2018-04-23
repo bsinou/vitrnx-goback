@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -63,14 +64,17 @@ func EditPost(c *gin.Context) {
 // List all posts
 func ListPosts(c *gin.Context) {
 	db := c.MustGet("db").(*mgo.Database)
+
+	fmt.Println("Listing posts")
+
 	posts := []model.Post{}
 	err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
 	if err != nil {
 		c.Error(err)
 	}
+	fmt.Printf("Retrieved %d posts\n", len(posts))
 
 	c.JSON(200, posts)
-
 }
 
 // Update an post

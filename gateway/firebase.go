@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	credFilePath = "/home/bsinou/dev/private/vitrnx/fbFile.json"
+	credFilePath = "/home/bsinou/dev/private/vitrnx/firebase-apiCert.json"
 )
 
 var (
@@ -33,12 +33,14 @@ func CheckCredentialAgainstFireBase(ctx context.Context, jwt string) error {
 
 	client, err := fbApp.Auth(ctx)
 	if err != nil {
-		log.Fatalf("error getting Auth client: %v\n", err)
+		log.Printf("error getting Auth client: %v\n", err)
+		return err
 	}
 
 	token, err := client.VerifyIDToken(jwt)
 	if err != nil {
-		log.Fatalf("error verifying ID token: %v\n", err)
+		log.Printf("error verifying ID token: %v\n", err)
+		return err
 	}
 
 	log.Printf("Verified ID token: %v\n", token)
