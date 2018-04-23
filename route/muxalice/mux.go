@@ -8,8 +8,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
-
-	"github.com/bsinou/vitrnx-goback/model"
 )
 
 func init() {
@@ -25,9 +23,9 @@ func handleRequests() {
 
 	// Define known routes
 	myRouter.Handle("/hello", ws.ThenFunc(sayHello))
-	myRouter.Handle("/posts", ws.ThenFunc(model.GetArticleByTag))
-	myRouter.Handle("/posts/{id}", ws.ThenFunc(model.GetSingleArticle))
-	myRouter.Handle("/by-tag/{tag}", ws.ThenFunc(model.GetArticleByTag))
+	// myRouter.Handle("/posts", ws.ThenFunc(model.GetArticleByTag))
+	// myRouter.Handle("/posts/{id}", ws.ThenFunc(model.GetSingleArticle))
+	// myRouter.Handle("/by-tag/{tag}", ws.ThenFunc(model.GetArticleByTag))
 
 	// Launch the server
 	log.Fatal(http.ListenAndServe(":7777", myRouter))
