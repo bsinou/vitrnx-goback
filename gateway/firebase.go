@@ -19,6 +19,11 @@ var (
 )
 
 func init() {
+}
+
+// CheckCredentialAgainstFireBase simply validate the passed token against firebase.
+func CheckCredentialAgainstFireBase(ctx context.Context, jwt string) error {
+
 	credOption := option.WithCredentialsFile(credFilePath)
 	var err error
 	fbApp, err = firebase.NewApp(context.Background(), nil, credOption)
@@ -26,10 +31,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("cannot connect to firebase: %v\n", err)
 	}
-}
-
-// CheckCredentialAgainstFireBase simply validate the passed token against firebase.
-func CheckCredentialAgainstFireBase(ctx context.Context, jwt string) error {
 
 	client, err := fbApp.Auth(ctx)
 	if err != nil {
