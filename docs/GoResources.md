@@ -18,6 +18,10 @@ A selection of good articles that focuses on a specific feature of the Go langua
 - About [Mutexes](https://kylewbanks.com/blog/tutorial-synchronizing-state-with-mutexes-golang)
 - About [wrappers](https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702), that we use to manage http requests.
 
+About the famous CORS issue and http in general
+- A [nice and concise take-away about http](https://drstearns.github.io/tutorials/http/)
+- And [the follow up about CORS](https://drstearns.github.io/tutorials/cors/) 
+
 Some videos
 
 - [MongoDB + GO by Steve Francia](http://spf13.com/presentation/mongodb-and-go/)
