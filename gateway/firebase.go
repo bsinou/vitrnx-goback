@@ -2,12 +2,13 @@
 package gateway
 
 import (
-	"context"
 	"log"
 
 	firebase "firebase.google.com/go"
-
+	"github.com/gin-gonic/gin"
 	"google.golang.org/api/option"
+
+	"github.com/bsinou/vitrnx-goback/model"
 )
 
 const (
@@ -22,11 +23,12 @@ func init() {
 }
 
 // CheckCredentialAgainstFireBase simply validate the passed token against firebase.
-func CheckCredentialAgainstFireBase(ctx context.Context, jwt string) error {
+func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, uid
 
 	credOption := option.WithCredentialsFile(credFilePath)
 	var err error
-	fbApp, err = firebase.NewApp(context.Background(), nil, credOption)
+
+	fbApp, err = firebase.NewApp(ctx, nil, credOption)
 	// TODO add retry
 	if err != nil {
 		log.Fatalf("cannot connect to firebase: %v\n", err)
@@ -44,7 +46,12 @@ func CheckCredentialAgainstFireBase(ctx context.Context, jwt string) error {
 		return err
 	}
 
-	log.Printf("Verified ID token: %v\n", token)
+	// Store relevant user info in the context
+	cs := token.Claims
+	ctx.Set(model.KeyUserId, cs[model.FbKeyUserId].(string))
+	// We use user email as name for the time being
+	ctx.Set(model.KeyUserName, cs[model.FbKeyEmail].(string))
+	ctx.Set(model.KeyEmailVerified, cs[model.FbKeyEmailVerified].(bool))
 
 	return nil
 }

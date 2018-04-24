@@ -43,18 +43,24 @@ func declareRoutes(r *gin.Engine) {
 		api.OPTIONS("/posts", optionsUser)     // POST
 		api.OPTIONS("/posts/:id", optionsUser) // PUT, DELETE
 		// REST
-		// api.GET("/new", Connect(t), handler.NewPost)
-		api.POST("/posts", Connect(t), handler.CreatePost)
-		api.GET("/posts/:id", Connect(t), handler.EditPost)
-		api.GET("/posts", Connect(t), handler.ListPosts)
-		api.POST("/posts/:id", Connect(t), handler.UpdatePost)
-		api.DELETE("/posts/:id", Connect(t), handler.DeletePost)
+		api.GET("/posts/:"+model.KeyPath, Connect(t), handler.ReadPost)      // get one
+		api.GET("/posts", Connect(t), handler.ListPosts)                     // query with params
+		api.POST("/posts", Connect(t), handler.PutPost)                      // new post
+		api.POST("/posts/:"+model.KeyPath, Connect(t), handler.PutPost)      // update post
+		api.DELETE("/posts/:"+model.KeyPath, Connect(t), handler.DeletePost) // delete post
 	}
 }
 
 func optionsUser(c *gin.Context) {
+	fmt.Println("Received an OPTIONS request at " + c.Request.URL.String())
+
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
+	// Rather use this than below lines
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	// The second 'Authorization' line erase the first and Content-Type is not an authorized header anymore
+	// Thus it's does not work
+	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
+
 	c.Next()
 }
