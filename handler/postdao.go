@@ -35,22 +35,29 @@ func ListPosts(c *gin.Context) {
 func PutPost(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
 
+	fmt.Printf("In put post\n")
+
 	post := model.Post{}
 	err := c.Bind(&post)
 	if err != nil {
+		fmt.Printf("Could not bind post %v\n", err)
 		c.Error(err)
 		return
 	}
 
-	fmt.Printf("Before updating the post, id: %s\n", post.ID)
+	fmt.Printf("Path %s\n", post.Path)
 
-	// Only on create for the time being
-	post.Date = time.Now()
-	post.Author = c.MustGet(model.KeyUserName).(string)
-	post.CreatedOn = time.Now().Unix()
+	if post.ID.String() == `ObjectIdHex("")` {
+		post.ID = bson.NewObjectId()
+		fmt.Printf("Created:  %v\n", post.ID)
 
-	// Overwrite with curr value
-	// TODO add change check and versioning
+		// Only on create for the time being
+		post.Date = time.Now()
+		post.Author = c.MustGet(model.KeyUserName).(string)
+		post.CreatedOn = time.Now().Unix()
+	}
+
+	// Always update the update (...) info
 	post.UpdatedOn = time.Now().Unix()
 	post.UpdatedBy = c.MustGet(model.KeyUserName).(string)
 
@@ -58,12 +65,19 @@ func PutPost(c *gin.Context) {
 
 	info, err := posts.Upsert(nil, post)
 	if err != nil {
-		// c.JSON(422, gin.H{"error": "Not enough info"})
 		c.Error(err)
 	}
 
-	if info.UpsertedId != nil {
+	if info.UpsertedId != nil { // Creation
+
+		// Store newly created Id in the current object (immutability?)
 		post.ID = info.UpsertedId.(bson.ObjectId)
+
+		// Only on create for the time being
+		post.Date = time.Now()
+		post.Author = c.MustGet(model.KeyUserName).(string)
+		post.CreatedOn = time.Now().Unix()
+
 	} else {
 		fmt.Printf("No ID generated ... \n")
 	}
@@ -71,6 +85,16 @@ func PutPost(c *gin.Context) {
 	fmt.Printf("Post upserted with ID: %v\n", post.ID.String())
 	fmt.Printf("Change info: %v\n", info)
 	c.JSON(201, gin.H{"post": post})
+}
+
+func existPath(path string, db *mgo.Database) {
+	post := model.Post{}
+	pathQuery := bson.M{model.KeyPath: path}
+	err := db.C(model.PostCollection).Find(pathQuery).One(&post)
+	if err != nil {
+		fmt.Printf("cannot retrieve with path %s - %s \n", path, err)
+	}
+
 }
 
 // ReadPost simply retrieves a post by path
