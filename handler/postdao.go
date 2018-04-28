@@ -16,11 +16,20 @@ import (
 func ListPosts(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
 
+	queryTag := c.Query("tag")
 	posts := []model.Post{}
-	err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+
+	var err error
+	if queryTag == "" {
+		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+	} else {
+		query := bson.M{model.KeyTags: queryTag}
+		err = db.C(model.PostCollection).Find(query).Sort("-updatedOn").All(&posts)
+	}
 	if err != nil {
 		c.Error(err)
 	}
+
 	fmt.Printf("Retrieved %d posts\n", len(posts))
 	if len(posts) > 0 {
 		fmt.Printf("Id of first retrieved posts: %v \n", posts[0])
@@ -45,56 +54,82 @@ func PutPost(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Path %s\n", post.Path)
+	if post.Path == "" {
+		err = fmt.Errorf("path is required. could not upsert")
+		fmt.Printf("path is required. could not upsert")
+		c.Error(err)
+		return
+	}
 
-	if post.ID.String() == `ObjectIdHex("")` {
+	posts := db.C(model.PostCollection)
+	creation := false
+
+	if post.ID.Hex() == "" {
+		fmt.Printf("## Creation")
+
+		creation = true
 		post.ID = bson.NewObjectId()
-		fmt.Printf("Created:  %v\n", post.ID)
+
+		if existPath(post.Path, db) {
+			err = fmt.Errorf("could not create: a post already exist at %s", post.Path)
+			c.Error(err)
+			return
+		}
 
 		// Only on create for the time being
 		post.Date = time.Now()
 		post.Author = c.MustGet(model.KeyUserName).(string)
 		post.CreatedOn = time.Now().Unix()
+	} else {
+		// prevent move
+		var oldPost model.Post
+		query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
+		err := db.C(model.PostCollection).Find(query).One(&oldPost)
+
+		if err != nil {
+			fmt.Printf("update failed: could not find post with id %s, %v\n", post.ID, err)
+			c.Error(err)
+			return
+		}
+
+		if oldPost.Path != post.Path {
+			fmt.Printf("different paths  %s != %s \n", oldPost.Path, post.Path)
+			c.Error(fmt.Errorf("update failed: cannot modify path for %s", oldPost.Path))
+			return
+		}
 	}
 
 	// Always update the update (...) info
 	post.UpdatedOn = time.Now().Unix()
 	post.UpdatedBy = c.MustGet(model.KeyUserName).(string)
 
-	posts := db.C(model.PostCollection)
-
-	info, err := posts.Upsert(nil, post)
-	if err != nil {
-		c.Error(err)
-	}
-
-	if info.UpsertedId != nil { // Creation
-
-		// Store newly created Id in the current object (immutability?)
-		post.ID = info.UpsertedId.(bson.ObjectId)
-
-		// Only on create for the time being
-		post.Date = time.Now()
-		post.Author = c.MustGet(model.KeyUserName).(string)
-		post.CreatedOn = time.Now().Unix()
-
+	if creation {
+		err = posts.Insert(post)
+		if err != nil {
+			fmt.Printf("Insert failed: %s\n", err.Error())
+			c.Error(err)
+		}
 	} else {
-		fmt.Printf("No ID generated ... \n")
+		query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
+		err = posts.Update(query, post)
+		if err != nil {
+			fmt.Printf("Update failed: %s\n", err.Error())
+			c.Error(err)
+		}
 	}
 
-	fmt.Printf("Post upserted with ID: %v\n", post.ID.String())
-	fmt.Printf("Change info: %v\n", info)
 	c.JSON(201, gin.H{"post": post})
 }
 
-func existPath(path string, db *mgo.Database) {
+func existPath(path string, db *mgo.Database) bool {
+	// fmt.Printf("Checking existence of %s\n", path)
+
 	post := model.Post{}
 	pathQuery := bson.M{model.KeyPath: path}
+	// Maybe add a check to insur unicity?
 	err := db.C(model.PostCollection).Find(pathQuery).One(&post)
-	if err != nil {
-		fmt.Printf("cannot retrieve with path %s - %s \n", path, err)
-	}
 
+	return err == nil
 }
 
 // ReadPost simply retrieves a post by path

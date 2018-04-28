@@ -5,6 +5,7 @@ package model
 // various
 const KeyDb = "db"
 const KeyUserRecord = "userRecord"
+const KeyMgoId = "id"
 
 // Users
 const KeyUserId = "userId"
@@ -15,6 +16,7 @@ const KeyClaims = "claims"
 
 // Posts
 const KeyPath = "path"
+const KeyTags = "tags"
 
 /* FIREBASE specific keys */
 

@@ -2,96 +2,247 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/bsinou/vitrnx-goback/model"
-	"github.com/bsinou/vitrnx-goback/mongodb"
+	"github.com/bsinou/vitrnx-goback/test/dummydata"
 	"github.com/gin-gonic/gin"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// func TestJwtToken(t *testing.T) {
+func TestPostDao_CRUD(t *testing.T) {
 
-// 	// See https://github.com/gin-gonic/gin/issues/323
-// 	w := httptest.NewRecorder()
-// 	ctx, _ := gin.CreateTestContext(w)
-// 	// Create a dummy gin context
+	// insure the DB collection is empty before launching the tests
+	cleanDB(t)
 
-// 	s := mongodb.Session.Clone()
-// 	defer s.Close()
-// 	ctx.Set(model.KeyDb, s.DB(mongodb.Mongo.Database))
-// 	ctx.Set(model.KeyUserName, "test@example.com")
+	Convey("TestBench", t, func() {
+		ctx, _ := mockContext(dummydata.TestPost1)
 
-// 	// retrieve DB and store in context
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+		ctx.Set(model.KeyDb, db)
 
-// 	// test put and list
-// }
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 0)
 
-func mockContext(params map[string]string) (*gin.Context, *httptest.ResponseRecorder) {
+		posts := []model.Post{}
+		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		So(err, ShouldBeNil)
+		So(len(posts), ShouldEqual, 1)
 
+		cleanDB(t)
+
+		posts2 := []model.Post{}
+		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts2)
+		So(err, ShouldBeNil)
+		So(len(posts2), ShouldEqual, 0)
+
+	})
+
+	Convey("MultipleInserts", t, func() {
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+
+		ctx, _ := mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		ctx2, _ := mockContext(dummydata.TestPost2)
+		ctx2.Set(model.KeyDb, db)
+		PutPost(ctx2)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		posts := []model.Post{}
+		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		So(err, ShouldBeNil)
+		So(len(posts), ShouldEqual, 2)
+
+		cleanDB(t)
+
+		posts2 := []model.Post{}
+		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts2)
+		So(err, ShouldBeNil)
+		So(len(posts2), ShouldEqual, 0)
+	})
+
+	Convey("Update", t, func() {
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+
+		ctx, _ := mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		// Update description
+		{
+			posts := []model.Post{}
+			err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+			So(err, ShouldBeNil)
+			So(len(posts), ShouldEqual, 1)
+
+			updatePost := posts[0]
+			newDesc := "A slightly different description"
+			updatePost.Desc = newDesc
+			b, err := json.Marshal(updatePost)
+			So(err, ShouldBeNil)
+
+			ctx, _ := mockContext(string(b))
+			ctx.Set(model.KeyDb, db)
+			PutPost(ctx)
+			So(len(ctx.Errors), ShouldEqual, 0)
+
+			posts = []model.Post{}
+			err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+			So(err, ShouldBeNil)
+			So(len(posts), ShouldEqual, 1)
+			So(posts[0].Desc, ShouldEqual, newDesc)
+
+		}
+
+		// Try to update path => should fail
+		{
+			posts := []model.Post{}
+			err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+			So(err, ShouldBeNil)
+			So(len(posts), ShouldEqual, 1)
+
+			updatePost := posts[0]
+			newSlug := "a-slightly-different-slug"
+			updatePost.Path = newSlug
+			b, err := json.Marshal(updatePost)
+			So(err, ShouldBeNil)
+
+			ctx, _ := mockContext(string(b))
+			ctx.Set(model.KeyDb, db)
+			PutPost(ctx)
+			So(len(ctx.Errors), ShouldEqual, 1)
+
+			posts = []model.Post{}
+			err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+			So(err, ShouldBeNil)
+			So(len(posts), ShouldEqual, 1)
+			So(posts[0].Path, ShouldEqual, "simple-test")
+		}
+
+		cleanDB(t)
+	})
+
+	Convey("TestPath", t, func() {
+
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+
+		ctx, _ := mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		// try to add same again
+		ctx, _ = mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 1)
+
+		posts := []model.Post{}
+		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		So(err, ShouldBeNil)
+		So(len(posts), ShouldEqual, 1)
+
+		exist := existPath("simple-test", db)
+		So(exist, ShouldBeTrue)
+
+		exist = existPath("simple-test-67", db)
+		So(exist, ShouldBeFalse)
+
+		cleanDB(t)
+	})
+
+	Convey("Queries", t, func() {
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+
+		ctx, _ := mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		PutPost(ctx)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		ctx2, _ := mockContext(dummydata.TestPost2)
+		ctx2.Set(model.KeyDb, db)
+		PutPost(ctx2)
+		So(len(ctx.Errors), ShouldEqual, 0)
+
+		posts := []model.Post{}
+		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		So(err, ShouldBeNil)
+		So(len(posts), ShouldEqual, 2)
+
+		cleanDB(t)
+
+		posts2 := []model.Post{}
+		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts2)
+		So(err, ShouldBeNil)
+		So(len(posts2), ShouldEqual, 0)
+	})
+
+}
+
+func mockContext(bodyAsJSONString string) (*gin.Context, *httptest.ResponseRecorder) {
+
+	// See https://github.com/gin-gonic/gin/issues/323
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
-	context, _ := gin.CreateTestContext(w)
+	ctx, _ := gin.CreateTestContext(w)
 
-	var paramsSlice []gin.Param
-	for key, value := range params {
-		paramsSlice = append(paramsSlice, gin.Param{
-			Key:   key,
-			Value: value,
-		})
-	}
+	// Set user mail that is normally added by a wrapper
+	ctx.Set(model.KeyUserName, "test@example.com")
 
-	reader := bytes.NewReader([]byte(testJSONMsg))
+	// Add the JSON body
+	reader := bytes.NewReader([]byte(bodyAsJSONString))
 	req, err := http.NewRequest(http.MethodPost, "/posts", ioutil.NopCloser(reader))
 	if err != nil {
 		fmt.Println("cannot create new mock request")
 	}
+	ctx.Request = req
 	req.Header.Set("Content-Type", "application/json")
-	context.Request = req
 
-	context.Params = paramsSlice
-	return context, w
+	return ctx, w
 }
 
-func TestPostDao_CRUD(t *testing.T) {
+func cleanDB(t *testing.T) {
+	s := dummydata.Session.Clone()
+	defer s.Close()
+	db := s.DB(dummydata.Mongo.Database)
 
-	Convey("CreatePost", t, func() {
-		ctx, _ := mockContext(map[string]string{
-			"isPublic": "false",
-			"title":    "A title",
-			"path":     "some-crazy-thing",
-			"tags":     "tag",
-			"hero":     "test.jpg",
-			"thumb":    "test.jpg",
-		})
+	posts := []model.Post{}
+	err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-		s := mongodb.Session.Clone()
-		defer s.Close()
-		ctx.Set(model.KeyDb, s.DB(mongodb.Mongo.Database))
-		ctx.Set(model.KeyUserName, "test@example.com")
+	for _, post := range posts {
+		fmt.Printf("PostID: %s\n", post.ID.Hex())
 
-		// fmt.Println("Got a json body: " + cardJSON)
-
-		PutPost(ctx)
-
-		// cardJSON := responseRecorder.Body.String()
-		// So(cardJSON, ShouldBeBlank)
-		// 		So(responseRecorder.Code, ShouldEqual, http.StatusNotFound)
-	})
+		query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
+		err := db.C(model.PostCollection).Remove(query)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
 }
-
-// { "post":
-// }
-var testJSONMsg string = `{ "body" : "",
-		"desc" : "",
-		"hero" : "test.jpg",
-		"isPublic" : false,
-		"path" : "abcd",
-		"tags" : "",
-		"thumb" : "test.jpg",
-		"title" : "Un autre titre"}`
