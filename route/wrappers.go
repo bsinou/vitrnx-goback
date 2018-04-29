@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/bsinou/vitrnx-goback/gateway"
+	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/model"
 	"github.com/bsinou/vitrnx-goback/mongodb"
@@ -49,7 +49,7 @@ func checkCredentials() gin.HandlerFunc {
 
 		// Real check
 		jwt := c.Request.Header.Get(model.KeyAuth)
-		err := gateway.CheckCredentialAgainstFireBase(c, jwt)
+		err := auth.CheckCredentialAgainstFireBase(c, jwt)
 		if err != nil {
 			// this is not enough, the list is still sent back.
 			c.JSON(503, gin.H{"error": "Unauthorized"})

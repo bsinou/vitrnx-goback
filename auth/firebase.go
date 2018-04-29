@@ -1,8 +1,6 @@
-// Package gateway centralises logic to connect to the outer world
-package gateway
+package auth
 
 import (
-	"fmt"
 	"log"
 
 	firebase "firebase.google.com/go"
@@ -54,40 +52,7 @@ func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, ui
 	ctx.Set(model.KeyUserName, cs[model.FbKeyEmail].(string))
 	ctx.Set(model.KeyEmailVerified, cs[model.FbKeyEmailVerified].(bool))
 
-	setClaims(ctx)
+	WithClaims(ctx)
 
 	return nil
-}
-
-// FIXME hard-coded known addresses
-var knownAddresses = []string{
-	"bruno@sinou.org",
-	"irene@sinou.org",
-	"pierre.cogne@gmail.com",
-}
-
-func setClaims(ctx *gin.Context) {
-
-	currUserName := ctx.MustGet(model.KeyUserName).(string)
-
-	isAdmin := false
-	for _, val := range knownAddresses {
-		if currUserName == val {
-			isAdmin = true
-			break
-		}
-	}
-	if isAdmin {
-		ctx.Set(model.KeyClaims, []string{
-			model.PolicyCanRead,
-			model.PolicyCanEdit,
-			model.PolicyCanManage,
-		})
-	} else {
-		ctx.Set(model.KeyClaims, []string{
-			model.PolicyCanRead,
-		})
-	}
-
-	fmt.Println("############# Claims set")
 }

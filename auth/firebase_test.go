@@ -1,5 +1,4 @@
-// Package gateway centralises logic to connect to the outer world
-package gateway
+package auth
 
 import (
 	"testing"

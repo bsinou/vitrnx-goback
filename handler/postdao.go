@@ -2,12 +2,14 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
@@ -15,10 +17,13 @@ import (
 func ListPosts(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
 
-	queryTag := c.Query("tag")
 	posts := []model.Post{}
-
 	var err error
+
+	// err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+	// fmt.Println("Tag: " + queryTag)
+
+	queryTag := c.Query("tag")
 	if queryTag == "" {
 		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
 	} else {
@@ -29,12 +34,7 @@ func ListPosts(c *gin.Context) {
 		c.Error(err)
 	}
 
-	// fmt.Printf("Retrieved %d posts\n", len(posts))
-	// if len(posts) > 0 {
-	// 	fmt.Printf("Id of first retrieved posts: %v \n", posts[0])
-	// }
-
-	c.JSON(200, posts)
+	c.JSON(200, gin.H{"posts": posts, "claims": auth.GetClaims(c)})
 }
 
 /* CRUD */
@@ -128,7 +128,7 @@ func ReadPost(c *gin.Context) {
 		c.Error(err)
 	}
 
-	c.JSON(201, gin.H{"post": post, "claims": `{"canManage": "true"}`})
+	c.JSON(201, gin.H{"post": post, "claims": auth.GetClaims(c)})
 }
 
 // DeletePost definitively removes a post from the repository
@@ -136,13 +136,15 @@ func DeletePost(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
 
 	post := model.Post{}
-	err := c.Bind(&post)
+	path := c.Param(model.KeyPath)
+	pathQuery := bson.M{model.KeyPath: path}
+	err := db.C(model.PostCollection).Find(pathQuery).One(&post)
 	if err != nil {
-		fmt.Printf("Could not bind post %v\n", err)
+		fmt.Printf("Could not find post to delete with path %s: %s\n", path, err.Error())
 		c.Error(err)
 		return
 	}
-	path := post.Path
+
 	query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
 
 	err = db.C(model.PostCollection).Remove(query)
@@ -151,6 +153,7 @@ func DeletePost(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": fmt.Sprintf("post at %s has been deleted", path)})
+	c.Redirect(http.StatusMovedPermanently, "/posts")
 
 }
 
