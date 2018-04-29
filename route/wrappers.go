@@ -17,14 +17,24 @@ import (
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
-		c.Next()
+
+		if c.Request.Method == "OPTIONS" {
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			// Headers have been set, no need to go further
+			c.Abort()
+			return
+		}
+
+		// Useless
+		// c.Next()
 	}
 }
 
 // loggingHandler simply logs every request to stdout
 func loggingHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("Got a request at %s \n", c.Request.URL.String())
+		log.Printf("Got a  %s request at %s \n", c.Request.Method, c.Request.URL.String())
 
 		t1 := time.Now()
 		c.Next()
@@ -37,22 +47,60 @@ func loggingHandler() gin.HandlerFunc {
 func checkCredentials() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		if c.Request.Method == "OPTIONS" {
-			fmt.Println("Silently returning...")
-			return
-		}
-
 		// Real check
 		jwt := c.Request.Header.Get(model.KeyAuth)
 		err := gateway.CheckCredentialAgainstFireBase(c, jwt)
 		if err != nil {
-			// TODO this is not enough, the list is still sent back.
+			// this is not enough, the list is still sent back.
 			c.JSON(503, gin.H{"error": "Unauthorized"})
+			// We have to explicitely abort the request
+			c.Abort()
 			return
 		}
 
-		// fmt.Println("Authorized, about to forward...")
-		c.Next()
+		fmt.Println("Authorized, about to forward...")
+		// Useless
+		// c.Next()
+	}
+}
+
+func contains(arr []string, val string) bool {
+	for _, currVal := range arr {
+		if currVal == val {
+			return true
+		}
+	}
+	return false
+}
+
+// checkCredentials calls the authentication API to verify the token
+func applyPolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		claims := c.MustGet(model.KeyClaims).([]string)
+
+		if c.Request.Method == "GET" {
+			if contains(claims, model.PolicyCanRead) {
+				c.Next()
+			} else {
+				c.JSON(503, gin.H{"error": "Unauthorized"})
+				return
+			}
+		} else if c.Request.Method == "POST" {
+			if contains(claims, model.PolicyCanEdit) {
+				c.Next()
+			} else {
+				c.JSON(503, gin.H{"error": "Unauthorized"})
+				return
+			}
+		} else if c.Request.Method == "DELETE" {
+			if contains(claims, model.PolicyCanManage) {
+				c.Next()
+			} else {
+				c.JSON(503, gin.H{"error": "Unauthorized"})
+				return
+			}
+		}
 	}
 }
 
@@ -68,11 +116,11 @@ func Connect(storeType string) gin.HandlerFunc {
 		} else if storeType == model.StoreTypeGorm {
 			db := gorm.GetConnection()
 			defer db.Close()
-			c.Set("db", db)
+			c.Set(model.KeyDb, db)
 		}
-
+		// Next must be explicitely called here
+		// so that the db session is released *AFTER* next handlers processing
 		c.Next()
-
 	}
 }
 
