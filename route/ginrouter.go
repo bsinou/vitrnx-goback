@@ -18,33 +18,23 @@ func init() {
 
 func declareRoutes(r *gin.Engine) {
 
-	api := r.Group("/api")
-
 	// Users
-	user := api.Group("/users")
+	user := r.Group("/api/users")
 	{
+		// shortcut to backend type
 		t := model.StoreTypeGorm
+		// Configure wrappers for this group
+		user.Use(loggingHandler(), cors())
 		// Enable fetch with js and CORS
-		user.OPTIONS("/", optionsUser)    // POST
-		user.OPTIONS("/:id", optionsUser) // PUT, DELETE
-		// REST
-		user.POST("/", Connect(t), handler.PostUser)
-		user.GET("/", Connect(t), handler.GetUsers)
-		user.GET("/:id", Connect(t), handler.GetUser)
-		user.PUT("/:id", Connect(t), handler.UpdateUser)
-		user.DELETE("/:id", Connect(t), handler.DeleteUser)
+		user.OPTIONS("", handler.DoNothing)    // POST
+		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
-		// // shortcut to backend type
-		// t := model.StoreTypeGorm
-		// // Enable fetch with js and CORS
-		// api.OPTIONS("/users", optionsUser)     // POST
-		// api.OPTIONS("/users/:id", optionsUser) // PUT, DELETE
-		// // REST
-		// api.POST("/users", Connect(t), handler.PostUser)
-		// api.GET("/users", Connect(t), handler.GetUsers)
-		// api.GET("/users/:id", Connect(t), handler.GetUser)
-		// api.PUT("/users/:id", Connect(t), handler.UpdateUser)
-		// api.DELETE("/users/:id", Connect(t), handler.DeleteUser)
+		// REST
+		user.POST("", Connect(t), checkCredentialsForUserCreation(), handler.PostUser)
+		// user.GET("", Connect(t), handler.GetUsers)
+		// user.GET(":id", Connect(t), handler.GetUser)
+		// user.PUT(":id", Connect(t), handler.UpdateUser)
+		// user.DELETE(":id", Connect(t), handler.DeleteUser)
 	}
 
 	// Posts
@@ -53,11 +43,11 @@ func declareRoutes(r *gin.Engine) {
 		// shortcut to backend type
 		t := model.StoreTypeMgo
 		// Configure wrappers for this group
-		posts.Use(loggingHandler(), cors(), checkCredentials(), applyPolicies())
+		posts.Use(loggingHandler(), cors(), checkCredentials(), applyPostPolicies())
 
 		// Enable fetch with js and CORS
-		posts.OPTIONS("", optionsUser)    // POST
-		posts.OPTIONS(":id", optionsUser) // PUT, DELETE
+		posts.OPTIONS("", handler.DoNothing)    // POST
+		posts.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
 		// REST
 		posts.GET("", Connect(t), handler.ListPosts)                    // query with params
@@ -68,21 +58,16 @@ func declareRoutes(r *gin.Engine) {
 	}
 }
 
-func doNothing(c *gin.Context) {
-	fmt.Println("We should never reach this point, but received a request at " + c.Request.URL.String())
-	c.Next()
-}
+// func optionsUser(c *gin.Context, allowedMethods string) {
+// 	fmt.Println("Received an OPTIONS request at " + c.Request.URL.String())
 
-func optionsUser(c *gin.Context) {
-	fmt.Println("Received an OPTIONS request at " + c.Request.URL.String())
+// 	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
+// 	// Rather use this than below lines
+// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+// 	// The second 'Authorization' line erase the first and Content-Type is not an authorized header anymore
+// 	// Thus it's does not work
+// 	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+// 	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
 
-	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
-	// Rather use this than below lines
-	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	// The second 'Authorization' line erase the first and Content-Type is not an authorized header anymore
-	// Thus it's does not work
-	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
-
-	c.Next()
-}
+// 	c.Next()
+// }

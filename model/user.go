@@ -5,10 +5,11 @@ import "github.com/jinzhu/gorm"
 // User represents a user in both gorm and json worlds
 type User struct {
 	gorm.Model
-	Name  string `gorm:"not null" json:"name"`
-	Email string `gorm:"not null" json:"email"`
-	ExtID string `gorm:"" json:"extId"`
-	Roles []Role `gorm:"" json:"roles"`
+	UserID  string `gorm:"" json:"userId"`
+	Name    string `gorm:"not null" json:"name"`
+	Email   string `gorm:"not null" json:"email"`
+	Address string `gorm:"" json:"address"`
+	Roles   []Role `gorm:"" json:"roles"`
 }
 
 type Role struct {

@@ -13,10 +13,8 @@ import (
 )
 
 func PostUser(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var user model.User
-	c.Bind(&user)
+	db := c.MustGet(model.KeyDb).(*gorm.DB)
+	user := c.MustGet(model.KeyUser).(model.User)
 
 	if user.Name != "" && user.Email != "" {
 		db.Create(&user)

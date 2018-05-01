@@ -8,6 +8,7 @@ const KeyUserRecord = "userRecord"
 const KeyMgoId = "id"
 
 // Users
+const KeyUser = "user"
 const KeyUserId = "userId"
 const KeyUserName = "userName"
 const KeyEmailVerified = "emailVerified"

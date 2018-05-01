@@ -3,7 +3,6 @@ package route
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,23 +12,6 @@ import (
 	"github.com/bsinou/vitrnx-goback/model"
 	"github.com/bsinou/vitrnx-goback/mongodb"
 )
-
-func cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
-
-		if c.Request.Method == "OPTIONS" {
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			// Headers have been set, no need to go further
-			c.Abort()
-			return
-		}
-
-		// Useless
-		// c.Next()
-	}
-}
 
 // loggingHandler simply logs every request to stdout
 func loggingHandler() gin.HandlerFunc {
@@ -64,42 +46,73 @@ func checkCredentials() gin.HandlerFunc {
 	}
 }
 
-func contains(arr []string, val string) bool {
-	for _, currVal := range arr {
-		if currVal == val {
-			return true
+// checkCredentials calls the authentication API to verify the token
+func checkCredentialsForUserCreation() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Checking credentials B4 user creation\n")
+
+		// Real check
+		jwt := c.Request.Header.Get(model.KeyAuth)
+
+		err := auth.CheckCredentialAgainstFireBase(c, jwt)
+		if err != nil {
+			log.Printf("firebase credentials validation failed\n")
+			c.JSON(503, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
 		}
+
+		userID := c.MustGet(model.KeyUserId).(string)
+		var user model.User
+		c.Bind(&user)
+		// TODO enhance this will only be true upon user creation
+		if userID != user.UserID {
+			log.Printf("user ID differ: %s vs %s \n", userID, user.UserID)
+			c.JSON(503, gin.H{"error": "Unauthorized"})
+			c.Abort()
+		}
+
+		c.Set(model.KeyUser, user)
+
 	}
-	return false
+}
+
+func cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Setting CORS policies\n")
+
+		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+
+		if c.Request.Method == "OPTIONS" {
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			// Headers have been set, no need to go further
+			c.Abort()
+			return
+		}
+
+		// 	NOTE: this is OK:
+		// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		// 	This is *NOT* OK:  the second 'Authorization' line erase the first and Content-Type is not an authorized header anymore
+		// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
+	}
 }
 
 // checkCredentials calls the authentication API to verify the token
-func applyPolicies() gin.HandlerFunc {
+func applyPostPolicies() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		claims := c.MustGet(model.KeyClaims).([]string)
 
-		if c.Request.Method == "GET" {
-			if contains(claims, model.PolicyCanRead) {
-				c.Next()
-			} else {
-				c.JSON(503, gin.H{"error": "Unauthorized"})
-				return
-			}
-		} else if c.Request.Method == "POST" {
-			if contains(claims, model.PolicyCanEdit) {
-				c.Next()
-			} else {
-				c.JSON(503, gin.H{"error": "Unauthorized"})
-				return
-			}
-		} else if c.Request.Method == "DELETE" {
-			if contains(claims, model.PolicyCanManage) {
-				c.Next()
-			} else {
-				c.JSON(503, gin.H{"error": "Unauthorized"})
-				return
-			}
+		if c.Request.Method == "GET" && !contains(claims, model.PolicyCanRead) {
+			c.JSON(503, gin.H{"error": "Unauthorized"})
+			c.Abort()
+		} else if c.Request.Method == "POST" && !contains(claims, model.PolicyCanEdit) {
+			c.JSON(503, gin.H{"error": "Unauthorized"})
+			c.Abort()
+		} else if c.Request.Method == "DELETE" && !contains(claims, model.PolicyCanManage) {
+			c.JSON(503, gin.H{"error": "Unauthorized"})
+			c.Abort()
 		}
 	}
 }
@@ -108,6 +121,7 @@ func applyPolicies() gin.HandlerFunc {
 // makes the `db` object available for each handler
 func Connect(storeType string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Printf("Connecting store %s \n", storeType)
 
 		if storeType == model.StoreTypeMgo {
 			s := mongodb.Session.Clone()
@@ -124,14 +138,23 @@ func Connect(storeType string) gin.HandlerFunc {
 	}
 }
 
-// ErrorHandler is a middleware to handle errors encountered during requests
-func ErrorHandler(c *gin.Context) {
-	c.Next()
+// // ErrorHandler is a middleware to handle errors encountered during requests
+// func ErrorHandler(c *gin.Context) {
+// 	c.Next()
 
-	// TODO: Handle it in a better way
-	if len(c.Errors) > 0 {
-		c.HTML(http.StatusBadRequest, "400", gin.H{
-			"errors": c.Errors,
-		})
+// 	// TODO: Handle it in a better way
+// 	if len(c.Errors) > 0 {
+// 		c.HTML(http.StatusBadRequest, "400", gin.H{
+// 			"errors": c.Errors,
+// 		})
+// 	}
+// }
+
+func contains(arr []string, val string) bool {
+	for _, currVal := range arr {
+		if currVal == val {
+			return true
+		}
 	}
+	return false
 }
