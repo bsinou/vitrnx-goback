@@ -1,8 +1,13 @@
 package gorm
 
 import (
-	"github.com/bsinou/vitrnx-goback/model"
+	"fmt"
+	"log"
+
 	"github.com/jinzhu/gorm"
+
+	"github.com/bsinou/vitrnx-goback/conf"
+	"github.com/bsinou/vitrnx-goback/model"
 
 	// First test with SQLite
 	_ "github.com/mattn/go-sqlite3"
@@ -22,11 +27,19 @@ func GetConnection() *gorm.DB {
 
 func getDb() *gorm.DB {
 	// DB: launch and config
-	db, err := gorm.Open("sqlite3", "./data/gorm-sqlite.db")
+
+	sqliteDbPath := "./data/gorm-sqlite.db"
+	if conf.Env != conf.EnvDev {
+		sqliteDbPath = fmt.Sprintf("/var/lib/%s/data/gorm-sqlite.db", conf.VitrnxInstanceKey)
+	}
+
+	db, err := gorm.Open("sqlite3", sqliteDbPath)
 	if err != nil {
-		panic(err) // TODO enhance
+		log.Fatal(fmt.Sprintf("Cannot open sqlite at %s, : %s\n", sqliteDbPath, err))
 	}
 	db.LogMode(true) // Display SQL queries
+
+	fmt.Printf("Initialised SQLite DB with file at %s\n", sqliteDbPath)
 	return db
 }
 

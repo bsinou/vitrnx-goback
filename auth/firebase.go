@@ -1,21 +1,20 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 
 	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/option"
 
+	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
-const (
-	credFilePath = "/home/bsinou/dev/private/vitrnx/firebase-apiCert.json"
-)
-
 var (
-	fbApp *firebase.App
+	fbApp        *firebase.App
+	credFilePath = "/home/bsinou/dev/private/vitrnx/firebase-apiCert.json"
 )
 
 func init() {
@@ -23,6 +22,10 @@ func init() {
 
 // CheckCredentialAgainstFireBase simply validate the passed token against firebase.
 func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, uid
+
+	if conf.Env != conf.EnvDev {
+		credFilePath = fmt.Sprintf("/var/lib/%s/conf/firebase-apiCert.json", conf.VitrnxInstanceKey)
+	}
 
 	credOption := option.WithCredentialsFile(credFilePath)
 	var err error

@@ -1,19 +1,26 @@
 package route
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/bsinou/vitrnx-goback/handler"
 	"github.com/bsinou/vitrnx-goback/model"
 	"github.com/gin-gonic/gin"
 )
 
-func init() {
-	fmt.Println("Starting Gin router")
+// func init() {
+// 	fmt.Println("Starting Gin router")
+// 	r := gin.Default()
+// 	// r.Use(loggingHandler(), cors(), checkCredentials(), applyPolicies())
+// 	declareRoutes(r)
+// 	go r.Run(":8888")
+// }
+
+func StartRouter() {
 	r := gin.Default()
 	// r.Use(loggingHandler(), cors(), checkCredentials(), applyPolicies())
 	declareRoutes(r)
-	r.Run(":8888")
+	log.Fatal(r.Run(":8888"))
 }
 
 func declareRoutes(r *gin.Engine) {
