@@ -19,8 +19,13 @@ A selection of good articles that focuses on a specific feature of the Go langua
 - About [wrappers](https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702), that we use to manage http requests.
 
 About the famous CORS issue and http in general
+
 - A [nice and concise take-away about http](https://drstearns.github.io/tutorials/http/)
-- And [the follow up about CORS](https://drstearns.github.io/tutorials/cors/) 
+- And [the follow up about CORS](https://drstearns.github.io/tutorials/cors/)
+
+About Vendoring
+
+- A [short introduction](https://devcenter.heroku.com/articles/go-dependencies-via-govendor) in [Heroku](https://en.wikipedia.org/wiki/Heroku)'s documentation that explains the very basics. 
 
 Some videos
 
