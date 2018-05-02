@@ -75,6 +75,7 @@ func PutPost(c *gin.Context) {
 		// Set creation info
 		post.ID = bson.NewObjectId()
 		post.Date = time.Now()
+		post.AuthorID = c.MustGet(model.KeyUserId).(string)
 		post.Author = c.MustGet(model.KeyUserName).(string)
 		post.CreatedOn = time.Now().Unix()
 	} else {
@@ -93,6 +94,13 @@ func PutPost(c *gin.Context) {
 			c.Error(fmt.Errorf("update failed: cannot modify path for %s", oldPost.Path))
 			return
 		}
+
+		// TODO clean this: date is lost on update
+		// fmt.Println("### Updating: received date: " + post.Date.Format("2006-01-02"))
+		// fmt.Println("### Updating: old date: " + oldPost.Date.Format("2006-01-02"))
+		post.Date = oldPost.Date
+		post.AuthorID = oldPost.AuthorID
+		post.Author = oldPost.Author
 	}
 
 	// Always update the update (...) info
@@ -127,6 +135,8 @@ func ReadPost(c *gin.Context) {
 	if err != nil {
 		c.Error(err)
 	}
+
+	fmt.Println("Found one post with date: " + post.Date.Format("2006-01-02 15:04:05"))
 
 	c.JSON(201, gin.H{"post": post, "claims": auth.GetClaims(c)})
 }

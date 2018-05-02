@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -162,10 +163,10 @@ func TestPostDao_CRUD(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(len(posts), ShouldEqual, 1)
 
-		exist := existPath("simple-test", db)
+		exist := doesPathExist("simple-test", db)
 		So(exist, ShouldBeTrue)
 
-		exist = existPath("simple-test-67", db)
+		exist = doesPathExist("simple-test-67", db)
 		So(exist, ShouldBeFalse)
 
 		cleanDB(t)
@@ -199,6 +200,34 @@ func TestPostDao_CRUD(t *testing.T) {
 		So(len(posts2), ShouldEqual, 0)
 	})
 
+	Convey("TestDates", t, func() {
+
+		s := dummydata.Session.Clone()
+		defer s.Close()
+		db := s.DB(dummydata.Mongo.Database)
+
+		ctx, _ := mockContext(dummydata.TestPost1)
+		ctx.Set(model.KeyDb, db)
+		t1 := time.Now()
+		time.Sleep(20 * time.Millisecond)
+		PutPost(ctx)
+		time.Sleep(20 * time.Millisecond)
+		So(len(ctx.Errors), ShouldEqual, 0)
+		t2 := time.Now()
+
+		posts := []model.Post{}
+		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		So(err, ShouldBeNil)
+		So(len(posts), ShouldEqual, 1)
+
+		fp := posts[0]
+
+		So(fp.Date.After(t1), ShouldBeTrue)
+		So(fp.Date.Before(t2), ShouldBeTrue)
+
+		cleanDB(t)
+	})
+
 }
 
 func mockContext(bodyAsJSONString string) (*gin.Context, *httptest.ResponseRecorder) {
@@ -210,6 +239,7 @@ func mockContext(bodyAsJSONString string) (*gin.Context, *httptest.ResponseRecor
 
 	// Set user mail that is normally added by a wrapper
 	ctx.Set(model.KeyUserName, "test@example.com")
+	ctx.Set(model.KeyUserId, "a very credible user ID")
 
 	// Add the JSON body
 	reader := bytes.NewReader([]byte(bodyAsJSONString))

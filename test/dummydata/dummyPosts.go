@@ -34,5 +34,5 @@ var TestPost3 = `{
 	"thumb" : "test.jpg",
 	"hero" : "test.jpg",
 	"desc" : "A short description",
-	"body" : "This post should not be importeted"
+	"body" : "This post should not be imported"
 }`

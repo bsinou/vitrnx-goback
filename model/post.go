@@ -17,6 +17,7 @@ type Post struct {
 	Date     time.Time     `json:"date,omitempty"`
 	Path     string        `json:"path" binding:"required" bson:"path"`
 	Title    string        `json:"title" binding:"required" bson:"title"`
+	AuthorID string        `json:"authorId" bson:"authorId"`
 	Author   string        `json:"author" bson:"author"`
 	Tags     string        `json:"tags" bson:"tags"`
 	Desc     string        `json:"desc" bson:"desc"`
