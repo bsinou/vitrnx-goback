@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"log"
 
 	firebase "firebase.google.com/go"
@@ -13,8 +12,7 @@ import (
 )
 
 var (
-	fbApp        *firebase.App
-	credFilePath = "/home/bsinou/dev/private/vitrnx/firebase-apiCert.json"
+	fbApp *firebase.App
 )
 
 func init() {
@@ -23,12 +21,11 @@ func init() {
 // CheckCredentialAgainstFireBase simply validate the passed token against firebase.
 func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, uid
 
-	if conf.Env != conf.EnvDev {
-		credFilePath = fmt.Sprintf("/var/lib/%s/conf/firebase-apiCert.json", conf.VitrnxInstanceKey)
+	credFilePath, err := conf.GetConfigFile("firebase-apiCert.json")
+	if err != nil {
+		log.Fatalf("no firebase API cert file found")
 	}
-
 	credOption := option.WithCredentialsFile(credFilePath)
-	var err error
 
 	fbApp, err = firebase.NewApp(ctx, nil, credOption)
 	// TODO add retry

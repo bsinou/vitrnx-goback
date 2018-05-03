@@ -3,9 +3,10 @@ package route
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/bsinou/vitrnx-goback/handler"
 	"github.com/bsinou/vitrnx-goback/model"
-	"github.com/gin-gonic/gin"
 )
 
 // func init() {

@@ -5,23 +5,19 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 
+	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/model"
 )
-
-// FIXME hard-coded known addresses
-var knownAddresses = []string{
-	"bruno@sinou.org",
-	"irene@sinou.org",
-	"pierre.cogne@gmail.com",
-}
 
 func WithClaims(ctx *gin.Context) {
 
 	currUserName := ctx.MustGet(model.KeyUserName).(string)
 
 	isAdmin := false
-	for _, val := range knownAddresses {
+	for _, val := range viper.GetStringSlice(conf.KeyAdminUsers) {
+
 		if currUserName == val {
 			isAdmin = true
 			break
@@ -39,7 +35,6 @@ func WithClaims(ctx *gin.Context) {
 		})
 	}
 
-	fmt.Println("############# Claims set")
 }
 
 // GetClaims returns an array with current valid claims to be serialised in JSON

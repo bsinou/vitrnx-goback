@@ -3,6 +3,7 @@ package gorm
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/jinzhu/gorm"
 
@@ -13,7 +14,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func init() {
+// func init() {
+// 	db := getDb()
+// 	createTableIfNeeded(db)
+// }
+
+func InitGormRepo() {
 	db := getDb()
 	createTableIfNeeded(db)
 }
@@ -28,10 +34,8 @@ func GetConnection() *gorm.DB {
 func getDb() *gorm.DB {
 	// DB: launch and config
 
-	sqliteDbPath := "./data/gorm-sqlite.db"
-	if conf.Env != conf.EnvDev {
-		sqliteDbPath = fmt.Sprintf("/var/lib/%s/data/gorm-sqlite.db", conf.VitrnxInstanceKey)
-	}
+	dataDirPath := conf.GetDataFolderPath()
+	sqliteDbPath := filepath.Join(dataDirPath, "gorm-sqlite.db")
 
 	db, err := gorm.Open("sqlite3", sqliteDbPath)
 	if err != nil {

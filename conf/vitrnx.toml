@@ -1,0 +1,12 @@
+# A sample TOML config file.
+
+## Generic variables
+
+
+## By categories
+
+[users]
+admins = [
+   	"bruno@sinou.org",
+]
+

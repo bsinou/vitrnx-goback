@@ -31,6 +31,14 @@ Some videos
 
 - [MongoDB + GO by Steve Francia](http://spf13.com/presentation/mongodb-and-go/)
 
+## High level concepts
+
+### DevOps
+Some of the nowadays buzz words:
+
+- The [Twelve-Factor App](https://12factor.net/): some guidelines for architecture and devops put in place by the [Heroku](heroku.com) team. 
+- [Managing config with TOML](https://karloespiritu.com/handling-configuration-files-in-go/) 
+
 ## HowTo-s
 
 ### Useful commands
