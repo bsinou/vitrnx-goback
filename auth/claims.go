@@ -11,6 +11,15 @@ import (
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
+func GetUserMeta(ctx *gin.Context) interface{} {
+	// TODO implement
+	return map[string]interface{}{
+		"email":       "bruno@sinou.org",
+		"displayName": "Bruno",
+		"roles":       []string{"ADMIN", "USER_ADMIN", "EDITOR", "VOLUNTEER", "GUEST"},
+	}
+}
+
 func WithClaims(ctx *gin.Context) {
 
 	currUserName := ctx.MustGet(model.KeyUserName).(string)
@@ -34,7 +43,6 @@ func WithClaims(ctx *gin.Context) {
 			model.PolicyCanRead,
 		})
 	}
-
 }
 
 // GetClaims returns an array with current valid claims to be serialised in JSON

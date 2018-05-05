@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/handler"
 	"github.com/bsinou/vitrnx-goback/model"
 )
@@ -19,15 +20,26 @@ import (
 
 func StartRouter() {
 	r := gin.Default()
-	// r.Use(loggingHandler(), cors(), checkCredentials(), applyPolicies())
 	declareRoutes(r)
 	log.Fatal(r.Run(":8888"))
 }
 
 func declareRoutes(r *gin.Engine) {
 
+	// Authentication
+	authG := r.Group(model.ApiPrefix + "auth")
+	{
+		// shortcut to backend type
+		t := model.StoreTypeGorm
+
+		authG.Use(loggingHandler(), cors(), checkCredentials())
+		authG.OPTIONS("login", handler.DoNothing) // POST
+		authG.POST("login", Connect(t), auth.PostLogin)
+
+	}
+
 	// Users
-	user := r.Group("/api/users")
+	user := r.Group(model.ApiPrefix + "users")
 	{
 		// shortcut to backend type
 		t := model.StoreTypeGorm
@@ -46,7 +58,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Posts
-	posts := r.Group("/api/posts")
+	posts := r.Group(model.ApiPrefix + "posts")
 	{
 		// shortcut to backend type
 		t := model.StoreTypeMgo

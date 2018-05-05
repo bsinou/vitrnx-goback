@@ -25,10 +25,10 @@ func ListPosts(c *gin.Context) {
 
 	queryTag := c.Query("tag")
 	if queryTag == "" {
-		err = db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
+		err = db.C(model.PostCollection).Find(nil).Sort("-createdOn").All(&posts)
 	} else {
 		query := bson.M{model.KeyTags: bson.RegEx{queryTag, ""}}
-		err = db.C(model.PostCollection).Find(query).Sort("-updatedOn").All(&posts)
+		err = db.C(model.PostCollection).Find(query).Sort("-createdOn").All(&posts)
 	}
 	if err != nil {
 		c.Error(err)

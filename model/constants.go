@@ -27,11 +27,13 @@ const FbKeyEmailVerified = "email_verified"
 
 /* LOCAL CONSTANTS */
 
+const ApiPrefix = "/api/"
+
 // Known Policies
 const PolicyCanRead = "CAN_READ"
 const PolicyCanEdit = "CAN_EDIT"
 const PolicyCanManage = "CAN_MANAGE"
 
-// store type
+// Store types
 const StoreTypeMgo = "mongodb"
 const StoreTypeGorm = "gorm"
