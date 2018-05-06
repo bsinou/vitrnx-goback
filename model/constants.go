@@ -5,11 +5,11 @@ package model
 // various
 const KeyDb = "db"
 const KeyUserRecord = "userRecord"
-const KeyMgoId = "id"
+const KeyMgoID = "id"
 
 // Users
 const KeyUser = "user"
-const KeyUserId = "userId"
+const KeyUserID = "userId"
 const KeyUserName = "userName"
 const KeyEmailVerified = "emailVerified"
 const KeyAuth = "authorization"
@@ -19,9 +19,12 @@ const KeyClaims = "claims"
 const KeyPath = "path"
 const KeyTags = "tags"
 
+// Comments
+const KeyParentID = "parentId"
+
 /* FIREBASE specific keys */
 
-const FbKeyUserId = "user_id"
+const FbKeyUserID = "user_id"
 const FbKeyEmail = "email"
 const FbKeyEmailVerified = "email_verified"
 

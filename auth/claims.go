@@ -14,9 +14,12 @@ import (
 func GetUserMeta(ctx *gin.Context) interface{} {
 	// TODO implement
 	return map[string]interface{}{
-		"email":       "bruno@sinou.org",
-		"displayName": "Bruno",
-		"roles":       []string{"ADMIN", "USER_ADMIN", "EDITOR", "VOLUNTEER", "GUEST"},
+		// "email":       "bruno@sinou.org",
+		// "displayName": "Bruno",
+		// "roles":       []string{"ADMIN", "USER_ADMIN", "MODERATOR", "EDITOR", "VOLUNTEER", "GUEST"},
+		"email":       "guest@sinou.org",
+		"displayName": "Guest",
+		"roles":       []string{"GUEST"},
 	}
 }
 

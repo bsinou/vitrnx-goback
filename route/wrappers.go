@@ -62,7 +62,7 @@ func checkCredentialsForUserCreation() gin.HandlerFunc {
 			return
 		}
 
-		userID := c.MustGet(model.KeyUserId).(string)
+		userID := c.MustGet(model.KeyUserID).(string)
 		var user model.User
 		c.Bind(&user)
 		// TODO enhance this will only be true upon user creation

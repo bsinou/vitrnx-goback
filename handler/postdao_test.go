@@ -239,7 +239,7 @@ func mockContext(bodyAsJSONString string) (*gin.Context, *httptest.ResponseRecor
 
 	// Set user mail that is normally added by a wrapper
 	ctx.Set(model.KeyUserName, "test@example.com")
-	ctx.Set(model.KeyUserId, "a very credible user ID")
+	ctx.Set(model.KeyUserID, "a very credible user ID")
 
 	// Add the JSON body
 	reader := bytes.NewReader([]byte(bodyAsJSONString))

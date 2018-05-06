@@ -75,7 +75,7 @@ func PutPost(c *gin.Context) {
 		// Set creation info
 		post.ID = bson.NewObjectId()
 		post.Date = time.Now()
-		post.AuthorID = c.MustGet(model.KeyUserId).(string)
+		post.AuthorID = c.MustGet(model.KeyUserID).(string)
 		post.Author = c.MustGet(model.KeyUserName).(string)
 		post.CreatedOn = time.Now().Unix()
 	} else {

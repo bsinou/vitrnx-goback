@@ -10,14 +10,6 @@ import (
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
-// func init() {
-// 	fmt.Println("Starting Gin router")
-// 	r := gin.Default()
-// 	// r.Use(loggingHandler(), cors(), checkCredentials(), applyPolicies())
-// 	declareRoutes(r)
-// 	go r.Run(":8888")
-// }
-
 func StartRouter() {
 	r := gin.Default()
 	declareRoutes(r)
@@ -76,18 +68,19 @@ func declareRoutes(r *gin.Engine) {
 		posts.POST(":"+model.KeyPath, Connect(t), handler.PutPost)      // update post
 		posts.DELETE(":"+model.KeyPath, Connect(t), handler.DeletePost) // delete post
 	}
+
+	// Comments
+	comments := r.Group(model.ApiPrefix + "comments")
+	{
+		// shortcut to backend type
+		t := model.StoreTypeMgo
+		comments.Use(loggingHandler(), cors(), checkCredentials())
+		comments.OPTIONS("", handler.DoNothing)
+		comments.OPTIONS(":"+model.KeyMgoID, handler.DoNothing)
+
+		// REST
+		comments.GET("", Connect(t), handler.ListComments)                     // query with params
+		comments.POST("", Connect(t), handler.PutComment)                      // Create or update
+		comments.DELETE(":"+model.KeyMgoID, Connect(t), handler.DeleteComment) // delete comment
+	}
 }
-
-// func optionsUser(c *gin.Context, allowedMethods string) {
-// 	fmt.Println("Received an OPTIONS request at " + c.Request.URL.String())
-
-// 	c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
-// 	// Rather use this than below lines
-// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-// 	// The second 'Authorization' line erase the first and Content-Type is not an authorized header anymore
-// 	// Thus it's does not work
-// 	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-// 	// c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
-
-// 	c.Next()
-// }
