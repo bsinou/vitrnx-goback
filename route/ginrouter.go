@@ -55,18 +55,18 @@ func declareRoutes(r *gin.Engine) {
 		// shortcut to backend type
 		t := model.StoreTypeMgo
 		// Configure wrappers for this group
-		posts.Use(loggingHandler(), cors(), checkCredentials(), applyPostPolicies())
+		posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(t), unmarshallPost(), applyPostPolicies())
 
 		// Enable fetch with js and CORS
 		posts.OPTIONS("", handler.DoNothing)    // POST
 		posts.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
 		// REST
-		posts.GET("", Connect(t), handler.ListPosts)                    // query with params
-		posts.GET(":"+model.KeyPath, Connect(t), handler.ReadPost)      // get one
-		posts.POST("", Connect(t), handler.PutPost)                     // new post
-		posts.POST(":"+model.KeyPath, Connect(t), handler.PutPost)      // update post
-		posts.DELETE(":"+model.KeyPath, Connect(t), handler.DeletePost) // delete post
+		posts.GET("", handler.ListPosts)                    // query with params
+		posts.GET(":"+model.KeyPath, handler.ReadPost)      // get one
+		posts.POST("", handler.PutPost)                     // new post
+		posts.POST(":"+model.KeyPath, handler.PutPost)      // update post
+		posts.DELETE(":"+model.KeyPath, handler.DeletePost) // delete post
 	}
 
 	// Comments

@@ -62,7 +62,7 @@ func PutComment(c *gin.Context) {
 		comment.ID = bson.NewObjectId()
 		comment.Date = time.Now().Unix()
 		comment.AuthorID = c.MustGet(model.KeyUserID).(string)
-		comment.Author = c.MustGet(model.KeyUserName).(string)
+		comment.Author = c.MustGet(model.KeyUserDisplayName).(string)
 		comment.CreatedOn = time.Now().Unix()
 	} else {
 		// TODO clean this: date is lost on update
@@ -80,7 +80,7 @@ func PutComment(c *gin.Context) {
 
 	// Always update the update (...) info
 	comment.UpdatedOn = time.Now().Unix()
-	comment.UpdatedBy = c.MustGet(model.KeyUserName).(string)
+	comment.UpdatedBy = c.MustGet(model.KeyUserID).(string)
 
 	if creation {
 		err = comments.Insert(comment)

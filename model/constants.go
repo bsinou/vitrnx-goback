@@ -10,12 +10,15 @@ const KeyMgoID = "id"
 // Users
 const KeyUser = "user"
 const KeyUserID = "userId"
-const KeyUserName = "userName"
+const KeyUserDisplayName = "userDisplayName"
+const KeyEmail = "email"
 const KeyEmailVerified = "emailVerified"
 const KeyAuth = "authorization"
 const KeyClaims = "claims"
+const KeyRoles = "roles"
 
 // Posts
+const KeyPost = "post"
 const KeyPath = "path"
 const KeyTags = "tags"
 
@@ -29,13 +32,6 @@ const FbKeyEmail = "email"
 const FbKeyEmailVerified = "email_verified"
 
 /* LOCAL CONSTANTS */
-
-const ApiPrefix = "/api/"
-
-// Known Policies
-const PolicyCanRead = "CAN_READ"
-const PolicyCanEdit = "CAN_EDIT"
-const PolicyCanManage = "CAN_MANAGE"
 
 // Store types
 const StoreTypeMgo = "mongodb"

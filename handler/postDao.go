@@ -9,7 +9,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
@@ -34,31 +33,25 @@ func ListPosts(c *gin.Context) {
 		c.Error(err)
 	}
 
-	c.JSON(200, gin.H{"posts": posts, "claims": auth.GetClaims(c)})
+	// might be enhanced using https://stackoverflow.com/questions/37562873/most-idiomatic-way-to-select-elements-from-an-array-in-golang
+	var updatedPosts []model.Post
+	for _, post := range posts {
+		query := bson.M{model.KeyParentID: bson.RegEx{post.Path, ""}}
+		post.CommentCount, err = db.C(model.CommentCollection).Find(query).Count()
+		updatedPosts = append(updatedPosts, post)
+		fmt.Printf("retrieving post at %s with %d comments \n", post.Path, post.CommentCount)
+		// TODO also filter by rights
+	}
+
+	c.JSON(200, gin.H{"posts": updatedPosts})
 }
 
 /* CRUD */
 
 // PutPost simply creates or updates a post in the document repository.
 func PutPost(c *gin.Context) {
+	post := c.MustGet(model.KeyPost).(model.Post)
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
-
-	fmt.Printf("In put post\n")
-
-	post := model.Post{}
-	err := c.Bind(&post)
-	if err != nil {
-		fmt.Printf("Could not bind post %v\n", err)
-		c.Error(err)
-		return
-	}
-
-	if post.Path == "" {
-		err = fmt.Errorf("path is required, could not upsert")
-		fmt.Println(err.Error())
-		c.Error(err)
-		return
-	}
 
 	posts := db.C(model.PostCollection)
 	creation := false
@@ -66,7 +59,7 @@ func PutPost(c *gin.Context) {
 	if post.ID.Hex() == "" {
 		// Check path unicity
 		if doesPathExist(post.Path, db) {
-			err = fmt.Errorf("could not create: a post already exist at %s", post.Path)
+			err := fmt.Errorf("could not create: a post already exist at %s", post.Path)
 			c.Error(err)
 			return
 		}
@@ -76,7 +69,7 @@ func PutPost(c *gin.Context) {
 		post.ID = bson.NewObjectId()
 		post.Date = time.Now().Unix()
 		post.AuthorID = c.MustGet(model.KeyUserID).(string)
-		post.Author = c.MustGet(model.KeyUserName).(string)
+		post.Author = c.MustGet(model.KeyUserDisplayName).(string)
 		post.CreatedOn = time.Now().Unix()
 	} else {
 		// Prevent move
@@ -105,10 +98,10 @@ func PutPost(c *gin.Context) {
 
 	// Always update the update (...) info
 	post.UpdatedOn = time.Now().Unix()
-	post.UpdatedBy = c.MustGet(model.KeyUserName).(string)
+	post.UpdatedBy = c.MustGet(model.KeyUserID).(string)
 
 	if creation {
-		err = posts.Insert(post)
+		err := posts.Insert(post)
 		if err != nil {
 			fmt.Printf("Insert failed: %s\n", err.Error())
 			c.Error(err)
@@ -116,7 +109,7 @@ func PutPost(c *gin.Context) {
 		c.JSON(201, gin.H{"post": post})
 	} else {
 		query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
-		err = posts.Update(query, post)
+		err := posts.Update(query, post)
 		if err != nil {
 			fmt.Printf("Update failed: %s\n", err.Error())
 			c.Error(err)
@@ -134,35 +127,26 @@ func ReadPost(c *gin.Context) {
 	err := db.C(model.PostCollection).Find(pathQuery).One(&post)
 	if err != nil {
 		c.Error(err)
+		return
 	}
 
-	c.JSON(201, gin.H{"post": post, "claims": auth.GetClaims(c)})
+	// TODO check if current user can see this post
+	c.JSON(201, gin.H{"post": post})
 }
 
 // DeletePost definitively removes a post from the repository
 func DeletePost(c *gin.Context) {
+	post := c.MustGet(model.KeyPost).(model.Post)
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
 
-	post := model.Post{}
-	path := c.Param(model.KeyPath)
-	pathQuery := bson.M{model.KeyPath: path}
-	err := db.C(model.PostCollection).Find(pathQuery).One(&post)
+	query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
+	err := db.C(model.PostCollection).Remove(query)
 	if err != nil {
-		fmt.Printf("Could not find post to delete with path %s: %s\n", path, err.Error())
 		c.Error(err)
 		return
 	}
-
-	query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
-
-	err = db.C(model.PostCollection).Remove(query)
-	if err != nil {
-		c.Error(err)
-	}
-
-	c.JSON(200, gin.H{"message": fmt.Sprintf("post at %s has been deleted", path)})
+	c.JSON(200, gin.H{"message": fmt.Sprintf("post at %s has been deleted", post.Path)})
 	c.Redirect(http.StatusMovedPermanently, "/posts")
-
 }
 
 /* Helper functions */
