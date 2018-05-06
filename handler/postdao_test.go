@@ -208,12 +208,12 @@ func TestPostDao_CRUD(t *testing.T) {
 
 		ctx, _ := mockContext(dummydata.TestPost1)
 		ctx.Set(model.KeyDb, db)
-		t1 := time.Now()
-		time.Sleep(20 * time.Millisecond)
+		t1 := time.Now().Unix()
+		time.Sleep(1 * time.Second)
 		PutPost(ctx)
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 		So(len(ctx.Errors), ShouldEqual, 0)
-		t2 := time.Now()
+		t2 := time.Now().Unix()
 
 		posts := []model.Post{}
 		err := db.C(model.PostCollection).Find(nil).Sort("-updatedOn").All(&posts)
@@ -222,8 +222,8 @@ func TestPostDao_CRUD(t *testing.T) {
 
 		fp := posts[0]
 
-		So(fp.Date.After(t1), ShouldBeTrue)
-		So(fp.Date.Before(t2), ShouldBeTrue)
+		So(fp.Date, ShouldBeGreaterThan, t1)
+		So(fp.Date, ShouldBeLessThan, t2)
 
 		cleanDB(t)
 	})

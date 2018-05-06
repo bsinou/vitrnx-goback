@@ -74,7 +74,7 @@ func PutPost(c *gin.Context) {
 		creation = true
 		// Set creation info
 		post.ID = bson.NewObjectId()
-		post.Date = time.Now()
+		post.Date = time.Now().Unix()
 		post.AuthorID = c.MustGet(model.KeyUserID).(string)
 		post.Author = c.MustGet(model.KeyUserName).(string)
 		post.CreatedOn = time.Now().Unix()
@@ -135,8 +135,6 @@ func ReadPost(c *gin.Context) {
 	if err != nil {
 		c.Error(err)
 	}
-
-	fmt.Println("Found one post with date: " + post.Date.Format("2006-01-02 15:04:05"))
 
 	c.JSON(201, gin.H{"post": post, "claims": auth.GetClaims(c)})
 }

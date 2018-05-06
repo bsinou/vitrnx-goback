@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -14,7 +12,7 @@ const (
 // Post model
 type Post struct {
 	ID       bson.ObjectId `json:"id,omitempty"  bson:"id,omitempty"`
-	Date     time.Time     `json:"date,omitempty"`
+	Date     int64         `json:"date,omitempty" bson:"date"`
 	Path     string        `json:"path" binding:"required" bson:"path"`
 	Title    string        `json:"title" binding:"required" bson:"title"`
 	AuthorID string        `json:"authorId" bson:"authorId"`
@@ -24,9 +22,12 @@ type Post struct {
 	Hero     string        `json:"hero" binding:"required" bson:"hero"`
 	Thumb    string        `json:"thumb" binding:"required" bson:"thumb"`
 	Body     string        `json:"body" bson:"body"`
-	IsPublic bool          `json:"isPublic" bson:"isPublic"`
+	Audience string        `json:"audience" bson:"audience"`
 
 	CreatedOn int64  `json:"createdOn,omitempty" bson:"createdOn"`
 	UpdatedOn int64  `json:"updatedOn,omitempty" bson:"updatedOn"`
 	UpdatedBy string `json:"updatedBy" bson:"updatedBy"`
+
+	// Convenience fields to communicate with the front end. They are not persisted
+	CommentCount int `json:"commentCount" bson:"-"`
 }
