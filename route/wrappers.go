@@ -74,6 +74,29 @@ func cors() gin.HandlerFunc {
 	}
 }
 
+// Connect middleware clones the database session for each request and
+// makes the `db` object available for each handler
+func Connect(storeType string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Connecting store %s \n", storeType)
+
+		if storeType == model.StoreTypeMgo {
+			s := mongodb.Session.Clone()
+			defer s.Close()
+			c.Set(model.KeyDb, s.DB(mongodb.Mongo.Database))
+		} else if storeType == model.StoreTypeGorm {
+			db := gorm.GetConnection()
+			defer db.Close()
+			c.Set(model.KeyDb, db)
+		}
+		// Next must be explicitely called here
+		// so that the db session is released *AFTER* next handlers processing
+		c.Next()
+	}
+}
+
+/* USER */
+
 // checkCredentials calls the authentication API to verify the token
 func checkCredentialsForUserCreation() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -104,6 +127,8 @@ func checkCredentialsForUserCreation() gin.HandlerFunc {
 
 	}
 }
+
+/* POSTS */
 
 // unmarshallPost retrieves the post from the context and store it again as a model.Post, for POST and MOVE requests.
 // For delete request we rather use the passed path
@@ -191,38 +216,90 @@ func applyPostPolicies() gin.HandlerFunc {
 	}
 }
 
-// Connect middleware clones the database session for each request and
-// makes the `db` object available for each handler
-func Connect(storeType string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		log.Printf("Connecting store %s \n", storeType)
+/* COMMENTS */
 
-		if storeType == model.StoreTypeMgo {
-			s := mongodb.Session.Clone()
-			defer s.Close()
-			c.Set(model.KeyDb, s.DB(mongodb.Mongo.Database))
-		} else if storeType == model.StoreTypeGorm {
-			db := gorm.GetConnection()
-			defer db.Close()
-			c.Set(model.KeyDb, db)
+// unmarshallComment retrieves the comment from the context and store it again as a model.Comment, for POST and MOVE requests.
+// For delete request we use the passed id
+func unmarshallComment() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rm := c.Request.Method
+		if rm == "POST" || rm == "MOVE" {
+			comment := model.Comment{}
+			err := c.Bind(&comment)
+			if err != nil {
+				fmt.Printf("Could not bind comment %v\n", err)
+				c.Error(err)
+				c.Abort()
+				return
+			}
+
+			if comment.ParentID == "" {
+				err = fmt.Errorf("parentId is required, could not upsert")
+				fmt.Println(err.Error())
+				c.Error(err)
+				return
+			}
+			c.Set(model.KeyComment, comment)
+		} else if rm == "DELETE" {
+			db := c.MustGet(model.KeyDb).(*mgo.Database)
+			comment := model.Comment{}
+			id := c.Param(model.KeyMgoID)
+			idQuery := bson.M{model.KeyMgoID: bson.ObjectIdHex(id)}
+			err := db.C(model.CommentCollection).Find(idQuery).One(&comment)
+			if err != nil {
+				fmt.Printf("Could not find comment to delete with id %s: %s\n", id, err.Error())
+				c.Error(err)
+				c.Abort()
+				return
+			}
+			c.Set(model.KeyComment, comment)
 		}
-		// Next must be explicitely called here
-		// so that the db session is released *AFTER* next handlers processing
-		c.Next()
 	}
 }
 
-// // ErrorHandler is a middleware to handle errors encountered during requests
-// func ErrorHandler(c *gin.Context) {
-// 	c.Next()
+// applyCommentPolicies limit possible actions depending on user role
+func applyCommentPolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// shortcut
+		rm := c.Request.Method
 
-// 	// TODO: Handle it in a better way
-// 	if len(c.Errors) > 0 {
-// 		c.HTML(http.StatusBadRequest, "400", gin.H{
-// 			"errors": c.Errors,
-// 		})
-// 	}
-// }
+		// Note: GET requests are filtered A POSTERIORI
+		if rm == "POST" || rm == "DELETE" {
+			userID := c.MustGet(model.KeyUserID).(string)
+			roles := c.MustGet(model.KeyRoles).([]string)
+			comment := c.MustGet(model.KeyComment).(model.Comment)
+
+			switch rm {
+			case "POST":
+				// creation
+				// TODO prevent addition when guest
+				// if comment.ID.Hex() == "" {
+				// 	// && !(contains(roles, model.RoleModerator) || contains(roles, model.RoleEditor)) {
+				// 	c.JSON(403, gin.H{"error": "you don't have sufficient permission to add a comment "})
+				// 	c.Abort()
+				// 	return
+				// }
+				// update only by the post author or a moderator
+				if !(contains(roles, model.RoleModerator) || comment.AuthorID == userID) {
+					c.JSON(403, gin.H{"error": "you don't have sufficient permission to update this comment"})
+					c.Abort()
+					return
+				}
+
+				break
+			case "DELETE":
+				// only the comment author or a moderator can delete
+				if !(contains(roles, model.RoleModerator) || comment.AuthorID == userID) {
+					c.JSON(403, gin.H{"error": "you don't have sufficient permission to delete this post"})
+					c.Abort()
+					return
+				}
+			}
+		}
+	}
+}
+
+/* HELPER FUNCTIONS */
 
 func contains(arr []string, val string) bool {
 	for _, currVal := range arr {

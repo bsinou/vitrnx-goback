@@ -37,21 +37,7 @@ func ListComments(c *gin.Context) {
 // PutComment simply creates or updates a comment in the document repository.
 func PutComment(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*mgo.Database)
-
-	comment := model.Comment{}
-	err := c.Bind(&comment)
-	if err != nil {
-		fmt.Printf("Could not bind comment %v\n", err)
-		c.Error(err)
-		return
-	}
-
-	if comment.ParentID == "" {
-		err = fmt.Errorf("parentId is required, could not upsert")
-		fmt.Println(err.Error())
-		c.Error(err)
-		return
-	}
+	comment := c.MustGet(model.KeyComment).(model.Comment)
 
 	comments := db.C(model.CommentCollection)
 	creation := false
@@ -64,18 +50,18 @@ func PutComment(c *gin.Context) {
 		comment.AuthorID = c.MustGet(model.KeyUserID).(string)
 		comment.Author = c.MustGet(model.KeyUserDisplayName).(string)
 		comment.CreatedOn = time.Now().Unix()
-	} else {
-		// TODO clean this: date is lost on update
-		oldComment, err := findCommentByID(db, comment.ID)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		// fmt.Println("### Updating: received date: " + comment.Date.Format("2006-01-02"))
-		// fmt.Println("### Updating: old date: " + oldComment.Date.Format("2006-01-02"))
-		comment.Date = oldComment.Date
-		comment.AuthorID = oldComment.AuthorID
-		comment.Author = oldComment.Author
+		// } else {
+		// 	// TODO clean this: date is lost on update
+		// 	oldComment, err := findCommentByID(db, comment.ID)
+		// 	if err != nil {
+		// 		c.Error(err)
+		// 		return
+		// 	}
+		// 	// fmt.Println("### Updating: received date: " + comment.Date.Format("2006-01-02"))
+		// 	// fmt.Println("### Updating: old date: " + oldComment.Date.Format("2006-01-02"))
+		// 	comment.Date = oldComment.Date
+		// 	comment.AuthorID = oldComment.AuthorID
+		// 	comment.Author = oldComment.Author
 	}
 
 	// Always update the update (...) info
@@ -83,7 +69,7 @@ func PutComment(c *gin.Context) {
 	comment.UpdatedBy = c.MustGet(model.KeyUserID).(string)
 
 	if creation {
-		err = comments.Insert(comment)
+		err := comments.Insert(comment)
 		if err != nil {
 			fmt.Printf("Insert failed: %s\n", err.Error())
 			c.Error(err)
@@ -91,7 +77,7 @@ func PutComment(c *gin.Context) {
 		c.JSON(201, gin.H{"comment": comment})
 	} else {
 		query := bson.M{"id": bson.ObjectIdHex(comment.ID.Hex())}
-		err = comments.Update(query, comment)
+		err := comments.Update(query, comment)
 		if err != nil {
 			fmt.Printf("Update failed: %s\n", err.Error())
 			c.Error(err)
@@ -117,12 +103,12 @@ func DeleteComment(c *gin.Context) {
 
 /* Helper functions */
 
-func findCommentByID(db *mgo.Database, ID bson.ObjectId) (*model.Comment, error) {
+func findCommentByID(db *mgo.Database, id bson.ObjectId) (*model.Comment, error) {
 	var comment model.Comment
-	query := bson.M{"id": bson.ObjectIdHex(ID.Hex())}
+	query := bson.M{"id": bson.ObjectIdHex(id.Hex())}
 	err := db.C(model.CommentCollection).Find(query).One(&comment)
 	if err != nil {
-		err = fmt.Errorf("update failed: could not find comment with id %s. Cause: %v", ID, err)
+		err = fmt.Errorf("update failed: could not find comment with id %s. Cause: %v", id, err)
 		fmt.Println(err.Error())
 		return nil, err
 	}

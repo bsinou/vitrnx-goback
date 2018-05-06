@@ -74,13 +74,13 @@ func declareRoutes(r *gin.Engine) {
 	{
 		// shortcut to backend type
 		t := model.StoreTypeMgo
-		comments.Use(loggingHandler(), cors(), checkCredentials())
+		comments.Use(loggingHandler(), cors(), checkCredentials(), Connect(t), unmarshallComment(), applyCommentPolicies())
 		comments.OPTIONS("", handler.DoNothing)
 		comments.OPTIONS(":"+model.KeyMgoID, handler.DoNothing)
 
 		// REST
-		comments.GET("", Connect(t), handler.ListComments)                     // query with params
-		comments.POST("", Connect(t), handler.PutComment)                      // Create or update
-		comments.DELETE(":"+model.KeyMgoID, Connect(t), handler.DeleteComment) // delete comment
+		comments.GET("", handler.ListComments)                     // query with params
+		comments.POST("", handler.PutComment)                      // Create or update
+		comments.DELETE(":"+model.KeyMgoID, handler.DeleteComment) // delete comment
 	}
 }

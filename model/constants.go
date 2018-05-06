@@ -23,6 +23,7 @@ const KeyPath = "path"
 const KeyTags = "tags"
 
 // Comments
+const KeyComment = "comment"
 const KeyParentID = "parentId"
 
 /* FIREBASE specific keys */

@@ -88,12 +88,12 @@ func PutPost(c *gin.Context) {
 			return
 		}
 
-		// TODO clean this: date is lost on update
-		// fmt.Println("### Updating: received date: " + post.Date.Format("2006-01-02"))
-		// fmt.Println("### Updating: old date: " + oldPost.Date.Format("2006-01-02"))
-		post.Date = oldPost.Date
-		post.AuthorID = oldPost.AuthorID
-		post.Author = oldPost.Author
+		// // TODO clean this: date is lost on update
+		// // fmt.Println("### Updating: received date: " + post.Date.Format("2006-01-02"))
+		// // fmt.Println("### Updating: old date: " + oldPost.Date.Format("2006-01-02"))
+		// post.Date = oldPost.Date
+		// post.AuthorID = oldPost.AuthorID
+		// post.Author = oldPost.Author
 	}
 
 	// Always update the update (...) info
