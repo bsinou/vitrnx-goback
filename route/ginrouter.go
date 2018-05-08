@@ -21,9 +21,9 @@ func declareRoutes(r *gin.Engine) {
 	// Authentication
 	authG := r.Group(model.ApiPrefix + "auth")
 	{
-		authG.Use(loggingHandler(), cors(), checkCredentials())
+		authG.Use(loggingHandler(), cors(), Connect(), checkCredentials())
 		authG.OPTIONS("login", handler.DoNothing) // POST
-		authG.POST("login", Connect(), auth.PostLogin)
+		authG.POST("login", auth.PostLogin)
 	}
 
 	// Users

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/mongodb"
@@ -37,6 +38,10 @@ var StartCmd = &cobra.Command{
 
 		// TODO Implement a better way to initialise services and manage clean shutdown
 		gorm.InitGormRepo()
+		// TODO enhance: launch a sync with firebase on each startup
+		// it is not too gravious this is reintrant
+		auth.ListExistingUsers(nil)
+
 		mongodb.InitMongoConnection()
 		// start gin router
 		route.StartRouter()

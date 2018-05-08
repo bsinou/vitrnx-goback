@@ -12,7 +12,7 @@ func GetUserMeta(ctx *gin.Context) (map[string]interface{}, error) {
 	userID := ctx.MustGet(model.KeyUserID).(string)
 	db := ctx.MustGet(model.KeyUserDb).(*gorm.DB)
 
-	var userMeta map[string]interface{}
+	userMeta := make(map[string]interface{})
 
 	var user model.User
 	err := db.Preload("Roles").Where(&model.User{UserID: userID}).First(&user).Error

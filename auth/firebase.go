@@ -119,7 +119,7 @@ func ListExistingUsers(ctx *gin.Context) error { //, uid
 		userRecord, err := userIterator.Next()
 		if err != nil {
 			if err.Error() == "no more items in iterator" {
-				fmt.Println("done iterating...")
+				fmt.Println("Sync with firebase done.")
 				break
 			}
 			return err
