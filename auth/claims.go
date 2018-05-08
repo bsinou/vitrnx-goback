@@ -3,29 +3,48 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
-func GetUserMeta(ctx *gin.Context) map[string]interface{} {
-	// TODO implement
-	return map[string]interface{}{
-		model.KeyEmail:           "bruno@sinou.org",
-		model.KeyUserDisplayName: "Bruno",
-		model.KeyRoles:           []string{"ADMIN", "USER_ADMIN", "MODERATOR", "EDITOR", "VOLUNTEER", "GUEST"},
-		// model.KeyEmail:           "guest@sinou.org",
-		// model.KeyUserDisplayName: "Guest",
-		// model.KeyRoles:           []string{"GUEST"},
+func GetUserMeta(ctx *gin.Context) (map[string]interface{}, error) {
+	userID := ctx.MustGet(model.KeyUserID).(string)
+	db := ctx.MustGet(model.KeyUserDb).(*gorm.DB)
+
+	var userMeta map[string]interface{}
+
+	var user model.User
+	err := db.Preload("Roles").Where(&model.User{UserID: userID}).First(&user).Error
+	if err != nil {
+		return userMeta, err
 	}
+
+	userMeta[model.KeyEmail] = user.Email
+	userMeta[model.KeyUserDisplayName] = user.Name
+
+	roles := make([]string, len(user.Roles))
+
+	for i, role := range user.Roles {
+		roles[i] = role.RoleID
+	}
+	userMeta[model.KeyUserRoles] = roles
+
+	return userMeta, nil
 }
 
-func WithUserMeta(ctx *gin.Context) {
+func WithUserMeta(ctx *gin.Context) error {
 
-	userMeta := GetUserMeta(ctx)
+	userMeta, err := GetUserMeta(ctx)
+	if err != nil {
+		return err
+	}
 
 	ctx.Set(model.KeyEmail, userMeta[model.KeyEmail])
 	ctx.Set(model.KeyUserDisplayName, userMeta[model.KeyUserDisplayName])
-	ctx.Set(model.KeyRoles, userMeta[model.KeyRoles])
+	ctx.Set(model.KeyUserRoles, userMeta[model.KeyUserRoles])
+
+	return nil
 }
 
 // func WithClaims(ctx *gin.Context) {

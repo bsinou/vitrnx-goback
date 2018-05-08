@@ -1,12 +1,18 @@
-# A sample TOML config file.
+# VitrnX sample TOML config file.
 
-## Generic variables
+# No prefix
+test = "a value from config"
 
-
-## By categories
+[auth]
+adminEmail = "admin@example.com"
+anonymousEmail = "guest@example.com"
+knownRoles = ["ADMIN/Administrator",  
+	"USER_ADMIN/User Admin",
+	"MODERATOR/Moderator",	
+	"EDITOR/Editor",
+	"VOLUNTEER/Volunteer",
+	"GUEST/Guest",
+	"REGISTERED/Registered",
+	"ANONYMOUS/Anonymous"]
 
 [users]
-admins = [
-   	"bruno@sinou.org",
-]
-

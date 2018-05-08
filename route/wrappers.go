@@ -74,21 +74,21 @@ func cors() gin.HandlerFunc {
 	}
 }
 
-// Connect middleware clones the database session for each request and
-// makes the `db` object available for each handler
-func Connect(storeType string) gin.HandlerFunc {
+// Connect middleware makes the various `db` objects available for each handler
+func Connect() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("Connecting store %s \n", storeType)
+		log.Printf("Connecting stores\n")
 
-		if storeType == model.StoreTypeMgo {
-			s := mongodb.Session.Clone()
-			defer s.Close()
-			c.Set(model.KeyDb, s.DB(mongodb.Mongo.Database))
-		} else if storeType == model.StoreTypeGorm {
-			db := gorm.GetConnection()
-			defer db.Close()
-			c.Set(model.KeyDb, db)
-		}
+		// User management
+		db := gorm.GetConnection()
+		defer db.Close()
+		c.Set(model.KeyUserDb, db)
+
+		// Data
+		s := mongodb.Session.Clone()
+		defer s.Close()
+		c.Set(model.KeyDataDb, s.DB(mongodb.Mongo.Database))
+
 		// Next must be explicitely called here
 		// so that the db session is released *AFTER* next handlers processing
 		c.Next()
@@ -158,7 +158,7 @@ func unmarshallPost() gin.HandlerFunc {
 			post := model.Post{}
 			path := c.Param(model.KeyPath)
 			pathQuery := bson.M{model.KeyPath: path}
-			db := c.MustGet(model.KeyDb).(*mgo.Database)
+			db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 			err := db.C(model.PostCollection).Find(pathQuery).One(&post)
 			if err != nil {
 				fmt.Printf("Could not find post to delete with path %s: %s\n", path, err.Error())
@@ -185,7 +185,7 @@ func applyPostPolicies() gin.HandlerFunc {
 
 		if rm == "POST" || rm == "DELETE" {
 			userID := c.MustGet(model.KeyUserID).(string)
-			roles := c.MustGet(model.KeyRoles).([]string)
+			roles := c.MustGet(model.KeyUserRoles).([]string)
 			post := c.MustGet(model.KeyPost).(model.Post)
 
 			switch rm {
@@ -241,7 +241,7 @@ func unmarshallComment() gin.HandlerFunc {
 			}
 			c.Set(model.KeyComment, comment)
 		} else if rm == "DELETE" {
-			db := c.MustGet(model.KeyDb).(*mgo.Database)
+			db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 			comment := model.Comment{}
 			id := c.Param(model.KeyMgoID)
 			idQuery := bson.M{model.KeyMgoID: bson.ObjectIdHex(id)}
@@ -266,7 +266,7 @@ func applyCommentPolicies() gin.HandlerFunc {
 		// Note: GET requests are filtered A POSTERIORI
 		if rm == "POST" || rm == "DELETE" {
 			userID := c.MustGet(model.KeyUserID).(string)
-			roles := c.MustGet(model.KeyRoles).([]string)
+			roles := c.MustGet(model.KeyUserRoles).([]string)
 			comment := c.MustGet(model.KeyComment).(model.Comment)
 
 			switch rm {

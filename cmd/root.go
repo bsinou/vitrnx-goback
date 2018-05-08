@@ -38,6 +38,7 @@ var RootCmd = &cobra.Command{
 		// Load  configuration
 		viper.SetConfigName(conf.BaseName) // name of config file (without extension)
 		for _, path := range conf.GetKnownConfFolderPaths() {
+			fmt.Println("Adding confing path: " + path)
 			viper.AddConfigPath(path)
 		}
 		err := viper.ReadInConfig() // Find and read the config file

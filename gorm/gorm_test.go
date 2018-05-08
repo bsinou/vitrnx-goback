@@ -60,7 +60,13 @@ func cleanDb(db *gorm.DB, path string) {
 	os.Remove(path)
 }
 
-func TestManyToManyWithMultiPrimaryKeys(t *testing.T) {
+func printBlog(b *Blog) {
+	tstStr, err := json.Marshal(b)
+	So(err, ShouldBeNil)
+	fmt.Println(string(tstStr) + "\n")
+}
+
+func TestManyToMany(t *testing.T) {
 
 	Convey("Test many to many associations: ", t, func() {
 		db, path := createDb()
@@ -96,13 +102,11 @@ func TestManyToManyWithMultiPrimaryKeys(t *testing.T) {
 		var blogs []Blog
 		db.Preload("Tags").Find(&blogs)
 		for _, currBlog := range blogs {
-			tstStr, err := json.Marshal(&currBlog)
-			So(err, ShouldBeNil)
-			fmt.Println(string(tstStr) + "\n")
+			printBlog(&currBlog)
 		}
 	})
 
-	Convey("Test tag value update: ", t, func() {
+	Convey("Test tag update: ", t, func() {
 		db, path := createDb()
 		defer cleanDb(db, path)
 
@@ -110,7 +114,7 @@ func TestManyToManyWithMultiPrimaryKeys(t *testing.T) {
 			Subject: "subject",
 			Body:    "body",
 			Tags: []Tag{
-				{ID: "TAG_1", Value: "tag2"},
+				{ID: "TAG_1", Value: "tag1"},
 				{ID: "TAG_2", Value: "tag2"},
 			},
 		}
@@ -140,44 +144,28 @@ func TestManyToManyWithMultiPrimaryKeys(t *testing.T) {
 			So(err, ShouldBeNil)
 			fmt.Println(string(tstStr) + "\n")
 		}
+
+		// Append
+		printBlog(&blog)
+		var tag3 = &Tag{ID: "TAG_3", Value: "tag3"}
+		db.Set("gorm:association_autoupdate", true).Model(&blog).Association("Tags").Append([]*Tag{tag3})
+		printBlog(&blog)
+		db.Save(&blog)
+		So(compareTags(blog.Tags, []string{"tag1", "tag2", "tag3"}), ShouldBeTrue)
+		So(db.Model(&blog).Association("Tags").Count(), ShouldEqual, 3)
+
+		// Replace
+		var tag4 = &Tag{ID: "TAG_4", Value: "tag4"}
+		var tag5 = &Tag{ID: "TAG_5", Value: "tag5"}
+		db.Model(&blog).Association("Tags").Replace(tag5, tag4)
+		db.Save(&blog)
+		var tags2 []Tag
+		db.Model(&blog).Related(&tags2, "Tags")
+		So(compareTags(tags2, []string{"tag5", "tag4"}), ShouldBeTrue)
+		So(db.Model(&blog).Association("Tags").Count(), ShouldEqual, 2)
+		printBlog(&blog)
+
 	})
-
-	// // Append
-	// var tag3 = &Tag{Locale: "ZH", Value: "tag3"}
-	// db.Model(&blog).Association("Tags").Append([]*Tag{tag3})
-	// if !compareTags(blog.Tags, []string{"tag1", "tag2", "tag3"}) {
-	// 	t.Errorf("Blog should has three tags after Append")
-	// }
-
-	// if db.Model(&blog).Association("Tags").Count() != 3 {
-	// 	t.Errorf("Blog should has three tags after Append")
-	// }
-
-	// var tags []Tag
-	// db.Model(&blog).Related(&tags, "Tags")
-	// if !compareTags(tags, []string{"tag1", "tag2", "tag3"}) {
-	// 	t.Errorf("Should find 3 tags with Related")
-	// }
-
-	// var blog1 Blog
-	// db.Preload("Tags").Find(&blog1)
-	// if !compareTags(blog1.Tags, []string{"tag1", "tag2", "tag3"}) {
-	// 	t.Errorf("Preload many2many relations")
-	// }
-
-	// // Replace
-	// var tag5 = &Tag{Locale: "ZH", Value: "tag5"}
-	// var tag6 = &Tag{Locale: "ZH", Value: "tag6"}
-	// db.Model(&blog).Association("Tags").Replace(tag5, tag6)
-	// var tags2 []Tag
-	// db.Model(&blog).Related(&tags2, "Tags")
-	// if !compareTags(tags2, []string{"tag5", "tag6"}) {
-	// 	t.Errorf("Should find 2 tags after Replace")
-	// }
-
-	// if db.Model(&blog).Association("Tags").Count() != 2 {
-	// 	t.Errorf("Blog should has three tags after Replace")
-	// }
 
 	// // Delete
 	// db.Model(&blog).Association("Tags").Delete(tag5)

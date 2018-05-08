@@ -5,13 +5,13 @@ import "github.com/jinzhu/gorm"
 // User represents a user in both gorm and json worlds
 type User struct {
 	gorm.Model
-	UserID  string `gorm:"" json:"userId"`
-	Name    string `gorm:"not null" json:"name"`
+	UserID  string `gorm:"not null" json:"userId"`
+	Name    string `gorm:"" json:"name"`
 	Email   string `gorm:"not null" json:"email"`
 	Address string `gorm:"" json:"address"`
-	// RolesStr string `gorm:"" json:"rolesStr"`
-	// TODO manage this cleanly
-	Roles []Role `gorm:"many2many:user_roles" json:"roles"`
+	Roles   []Role `gorm:"many2many:user_roles" json:"roles"`
+	// Ease front end and JSON communication, not persisted
+	UserRoles []string `gorm:"-" json:"userRoles"`
 }
 
 // Role is used to manage permissions

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 
 	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/model"
@@ -56,4 +58,30 @@ func createTableIfNeeded(db *gorm.DB) {
 		db.Set("gorm:table_options", "ENGINE=InnoDB")
 		db.CreateTable(&model.User{}, &model.Role{})
 	}
+
+	// initialise roles from config
+	knownRoles := viper.GetStringSlice(conf.KeyKnownRoles)
+	// Simplify testing
+	if len(knownRoles) == 0 {
+		knownRoles = []string{"ADMIN/Administrator", "REGISTERED/Registered User", "Anonymous/Anonymous User"}
+	}
+
+	for _, v := range knownRoles {
+		tokens := strings.Split(v, "/")
+		var role model.Role
+		err := db.Where(&model.Role{RoleID: tokens[0]}).First(&role).Error
+		if err == nil {
+			// Role already exist do nothing
+			continue
+		}
+		if !gorm.IsRecordNotFoundError(err) {
+			log.Fatalln(err.Error()) // Unexpected error
+		}
+		db.Save(&model.Role{RoleID: tokens[0], Label: tokens[1]})
+	}
+
+	// knownRoles := viper.GetStringMapString(conf.KeyKnownRoles)
+	// for k, v := range knownRoles {
+	// 	fmt.Printf("%s - %s\n", k, v)
+	// }
 }

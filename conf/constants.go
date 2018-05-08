@@ -8,9 +8,10 @@ const (
 
 /* KEYS (to retrieve values via Viper) */
 const (
-	KeyEnvType = "env"
-
-	KeyAdminUsers = "users.admins"
+	KeyEnvType        = "env"
+	KeyAdminEmail     = "auth.adminEmail"
+	KeyAnonymousEmail = "auth.anonymousEmail"
+	KeyKnownRoles     = "auth.knownRoles"
 )
 
 /* KNOWN VALUES */

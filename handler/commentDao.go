@@ -13,7 +13,7 @@ import (
 
 // ListComments retrieves all comments, potentially filtered by the passed parentId.
 func ListComments(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	comments := []model.Comment{}
 	var err error
@@ -36,7 +36,7 @@ func ListComments(c *gin.Context) {
 
 // PutComment simply creates or updates a comment in the document repository.
 func PutComment(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 	comment := c.MustGet(model.KeyComment).(model.Comment)
 
 	comments := db.C(model.CommentCollection)
@@ -88,7 +88,7 @@ func PutComment(c *gin.Context) {
 
 // DeleteComment definitively removes a comment from the repository
 func DeleteComment(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	cID := c.Param(model.KeyMgoID)
 	query := bson.M{model.KeyMgoID: bson.ObjectIdHex(cID)}

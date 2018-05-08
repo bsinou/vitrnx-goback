@@ -3,7 +3,9 @@ package model
 /* CONTEXT KEYS */
 
 // various
-const KeyDb = "db"
+// const KeyDb = "db"
+const KeyUserDb = "userDb"
+const KeyDataDb = "dataDb"
 const KeyUserRecord = "userRecord"
 const KeyMgoID = "id"
 
@@ -15,7 +17,7 @@ const KeyEmail = "email"
 const KeyEmailVerified = "emailVerified"
 const KeyAuth = "authorization"
 const KeyClaims = "claims"
-const KeyRoles = "roles"
+const KeyUserRoles = "userRoles"
 
 // Posts
 const KeyPost = "post"

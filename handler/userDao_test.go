@@ -12,6 +12,7 @@ import (
 
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/model"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 

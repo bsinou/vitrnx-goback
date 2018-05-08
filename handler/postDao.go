@@ -14,7 +14,7 @@ import (
 
 // ListPosts retrieves all posts, potentially filtered by passed tag value.
 func ListPosts(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	posts := []model.Post{}
 	var err error
@@ -51,7 +51,7 @@ func ListPosts(c *gin.Context) {
 // PutPost simply creates or updates a post in the document repository.
 func PutPost(c *gin.Context) {
 	post := c.MustGet(model.KeyPost).(model.Post)
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	posts := db.C(model.PostCollection)
 	creation := false
@@ -120,7 +120,7 @@ func PutPost(c *gin.Context) {
 
 // ReadPost simply retrieves a post by path
 func ReadPost(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	post := model.Post{}
 	pathQuery := bson.M{model.KeyPath: c.Param(model.KeyPath)}
@@ -137,7 +137,7 @@ func ReadPost(c *gin.Context) {
 // DeletePost definitively removes a post from the repository
 func DeletePost(c *gin.Context) {
 	post := c.MustGet(model.KeyPost).(model.Post)
-	db := c.MustGet(model.KeyDb).(*mgo.Database)
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	query := bson.M{"id": bson.ObjectIdHex(post.ID.Hex())}
 	err := db.C(model.PostCollection).Remove(query)

@@ -21,20 +21,14 @@ func declareRoutes(r *gin.Engine) {
 	// Authentication
 	authG := r.Group(model.ApiPrefix + "auth")
 	{
-		// shortcut to backend type
-		t := model.StoreTypeGorm
-
 		authG.Use(loggingHandler(), cors(), checkCredentials())
 		authG.OPTIONS("login", handler.DoNothing) // POST
-		authG.POST("login", Connect(t), auth.PostLogin)
-
+		authG.POST("login", Connect(), auth.PostLogin)
 	}
 
 	// Users
 	user := r.Group(model.ApiPrefix + "users")
 	{
-		// shortcut to backend type
-		t := model.StoreTypeGorm
 		// Configure wrappers for this group
 		user.Use(loggingHandler(), cors())
 		// Enable fetch with js and CORS
@@ -42,20 +36,14 @@ func declareRoutes(r *gin.Engine) {
 		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
 		// REST
-		user.POST("", Connect(t), checkCredentialsForUserCreation(), handler.PutUser)
-		// user.GET("", Connect(t), handler.GetUsers)
-		// user.GET(":id", Connect(t), handler.GetUser)
-		// user.PUT(":id", Connect(t), handler.UpdateUser)
-		// user.DELETE(":id", Connect(t), handler.DeleteUser)
+		user.POST("", Connect(), checkCredentialsForUserCreation(), handler.PutUser)
 	}
 
 	// Posts
 	posts := r.Group(model.ApiPrefix + "posts")
 	{
-		// shortcut to backend type
-		t := model.StoreTypeMgo
 		// Configure wrappers for this group
-		posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(t), unmarshallPost(), applyPostPolicies())
+		posts.Use(loggingHandler(), cors(), Connect(), checkCredentials(), unmarshallPost(), applyPostPolicies())
 
 		// Enable fetch with js and CORS
 		posts.OPTIONS("", handler.DoNothing)    // POST
@@ -72,9 +60,7 @@ func declareRoutes(r *gin.Engine) {
 	// Comments
 	comments := r.Group(model.ApiPrefix + "comments")
 	{
-		// shortcut to backend type
-		t := model.StoreTypeMgo
-		comments.Use(loggingHandler(), cors(), checkCredentials(), Connect(t), unmarshallComment(), applyCommentPolicies())
+		comments.Use(loggingHandler(), cors(), Connect(), checkCredentials(), unmarshallComment(), applyCommentPolicies())
 		comments.OPTIONS("", handler.DoNothing)
 		comments.OPTIONS(":"+model.KeyMgoID, handler.DoNothing)
 

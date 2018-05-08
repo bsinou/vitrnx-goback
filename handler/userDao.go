@@ -25,7 +25,7 @@ func GetUsers(c *gin.Context) {
 /* CRUD */
 
 func PutUser(c *gin.Context) {
-	db := c.MustGet(model.KeyDb).(*gorm.DB)
+	db := c.MustGet(model.KeyUserDb).(*gorm.DB)
 	user := c.MustGet(model.KeyUser).(model.User)
 
 	if user.Name != "" && user.Email != "" {
