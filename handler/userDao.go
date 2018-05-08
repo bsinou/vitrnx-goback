@@ -15,11 +15,12 @@ import (
 /* QUERIES */
 
 func GetUsers(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
+	db := c.MustGet(model.KeyUserDb).(*gorm.DB)
 	var users []model.User
 	db.Find(&users)
-	c.JSON(200, users)
+
+	// TODO manage adding roles in the list
+	c.JSON(200, gin.H{"users": users})
 }
 
 /* CRUD */
