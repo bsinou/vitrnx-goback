@@ -12,7 +12,19 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func PostUser(c *gin.Context) {
+/* QUERIES */
+
+func GetUsers(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	var users []model.User
+	db.Find(&users)
+	c.JSON(200, users)
+}
+
+/* CRUD */
+
+func PutUser(c *gin.Context) {
 	db := c.MustGet(model.KeyDb).(*gorm.DB)
 	user := c.MustGet(model.KeyUser).(model.User)
 
@@ -24,17 +36,8 @@ func PostUser(c *gin.Context) {
 	}
 }
 
-func GetUsers(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-
-	var users []model.User
-	db.Find(&users)
-	c.JSON(200, users)
-}
-
 func GetUser(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
-
 	id := c.Params.ByName("id")
 	var user model.User
 	db.First(&user, id)

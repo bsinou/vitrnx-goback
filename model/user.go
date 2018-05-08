@@ -9,11 +9,13 @@ type User struct {
 	Name    string `gorm:"not null" json:"name"`
 	Email   string `gorm:"not null" json:"email"`
 	Address string `gorm:"" json:"address"`
-	Roles   []Role `gorm:"" json:"roles"`
+	// RolesStr string `gorm:"" json:"rolesStr"`
+	// TODO manage this cleanly
+	Roles []Role `gorm:"many2many:user_roles" json:"roles"`
 }
 
+// Role is used to manage permissions
 type Role struct {
-	gorm.Model
-	Label string `gorm:"" json:"label"`
-	ExtID uint   `gorm:"" json:"extId"`
+	RoleID string `gorm:"primary_key" json:"roleId"`
+	Label  string `gorm:"" json:"label"`
 }

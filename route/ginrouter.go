@@ -42,7 +42,7 @@ func declareRoutes(r *gin.Engine) {
 		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
 		// REST
-		user.POST("", Connect(t), checkCredentialsForUserCreation(), handler.PostUser)
+		user.POST("", Connect(t), checkCredentialsForUserCreation(), handler.PutUser)
 		// user.GET("", Connect(t), handler.GetUsers)
 		// user.GET(":id", Connect(t), handler.GetUser)
 		// user.PUT(":id", Connect(t), handler.UpdateUser)

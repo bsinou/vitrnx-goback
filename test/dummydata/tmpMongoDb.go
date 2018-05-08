@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	// Session stores mongo session
-	Session *mgo.Session
+	// MgoSession stores mongo session
+	MgoSession *mgo.Session
 
 	// Mongo stores the mongodb connection string information
 	Mongo *mgo.DialInfo
@@ -37,6 +37,6 @@ func init() {
 	}
 	s.SetSafe(&mgo.Safe{})
 	fmt.Println("Connected to", uri)
-	Session = s
+	MgoSession = s
 	Mongo = mongo
 }

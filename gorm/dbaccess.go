@@ -14,12 +14,21 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// func init() {
-// 	db := getDb()
-// 	createTableIfNeeded(db)
-// }
+var (
+	dbFileAbsPath string
+)
 
+// InitGormRepo initialises a Gorm backend backed by SQLite
 func InitGormRepo() {
+	dataDirPath := conf.GetDataFolderPath()
+	dbFileAbsPath = filepath.Join(dataDirPath, "gorm-sqlite.db")
+	db := getDb()
+	createTableIfNeeded(db)
+}
+
+// InitGormTestRepo is a convenience method to ease Unit Test implementation
+func InitGormTestRepo(sqliteFileAbsPath string) {
+	dbFileAbsPath = sqliteFileAbsPath
 	db := getDb()
 	createTableIfNeeded(db)
 }
@@ -30,26 +39,21 @@ func GetConnection() *gorm.DB {
 }
 
 /* Local helpers */
-
 func getDb() *gorm.DB {
-	// DB: launch and config
 
-	dataDirPath := conf.GetDataFolderPath()
-	sqliteDbPath := filepath.Join(dataDirPath, "gorm-sqlite.db")
-
-	db, err := gorm.Open("sqlite3", sqliteDbPath)
+	db, err := gorm.Open("sqlite3", dbFileAbsPath)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Cannot open sqlite at %s, : %s\n", sqliteDbPath, err))
+		log.Fatal(fmt.Sprintf("Cannot open sqlite at %s, : %s\n", dbFileAbsPath, err))
 	}
-	db.LogMode(true) // Display SQL queries
+	// db.LogMode(true) // Display SQL queries
 
-	fmt.Printf("Initialised SQLite DB with file at %s\n", sqliteDbPath)
+	fmt.Printf("Initialised SQLite DB with file at %s\n", dbFileAbsPath)
 	return db
 }
 
 func createTableIfNeeded(db *gorm.DB) {
 	if !db.HasTable(&model.User{}) {
-		db.CreateTable(&model.User{})
-		db.Set("gorm:table_options", "ENGINE=InnoDB").CreateTable(&model.User{})
+		db.Set("gorm:table_options", "ENGINE=InnoDB")
+		db.CreateTable(&model.User{}, &model.Role{})
 	}
 }
