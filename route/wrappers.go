@@ -35,7 +35,7 @@ func checkCredentials() gin.HandlerFunc {
 		jwt := c.Request.Header.Get(model.KeyAuth)
 		if jwt == "" {
 			// No JWT cannot continue
-			c.JSON(401, gin.H{"error": "No JWT token provided, please log out and back again"})
+			c.JSON(401, gin.H{"error": "No JWT token provided, please log out and back in again"})
 			c.Abort()
 			return
 		}

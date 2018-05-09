@@ -21,7 +21,7 @@ func declareRoutes(r *gin.Engine) {
 	// Authentication
 	authG := r.Group(model.ApiPrefix + "auth")
 	{
-		authG.Use(loggingHandler(), cors(), Connect(), checkCredentials())
+		authG.Use(loggingHandler(), cors(), checkCredentials(), Connect())
 		authG.OPTIONS("login", handler.DoNothing) // POST
 		authG.POST("login", auth.PostLogin)
 	}
@@ -30,7 +30,7 @@ func declareRoutes(r *gin.Engine) {
 	user := r.Group(model.ApiPrefix + "users")
 	{
 		// Configure wrappers for this group
-		user.Use(loggingHandler(), cors(), Connect())
+		user.Use(loggingHandler(), cors(), checkCredentials(), Connect())
 		// Enable fetch with js and CORS
 		user.OPTIONS("", handler.DoNothing)    // POST
 		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
@@ -39,6 +39,19 @@ func declareRoutes(r *gin.Engine) {
 		user.GET("", handler.GetUsers)                 // query with params
 		user.GET(":"+model.KeyUserID, handler.GetUser) // get one
 		user.POST("", checkCredentialsForUserCreation(), handler.PutUser)
+	}
+
+	// Roles
+	roles := r.Group(model.ApiPrefix + "roles")
+	{
+		roles.Use(loggingHandler(), cors(), checkCredentials(), Connect())
+		roles.OPTIONS("", handler.DoNothing)    // POST
+		roles.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
+
+		// REST
+		roles.GET("", handler.GetRoles) // query with params
+		// user.GET(":"+model.KeyUserID, handler.GetUser) // get one
+		// user.POST("", checkCredentialsForUserCreation(), handler.PutUser)
 	}
 
 	// Posts
@@ -67,7 +80,7 @@ func declareRoutes(r *gin.Engine) {
 	// Comments
 	comments := r.Group(model.ApiPrefix + "comments")
 	{
-		comments.Use(loggingHandler(), cors(), Connect(), checkCredentials(), unmarshallComment(), applyCommentPolicies())
+		comments.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallComment(), applyCommentPolicies())
 		comments.OPTIONS("", handler.DoNothing)
 		comments.OPTIONS(":"+model.KeyMgoID, handler.DoNothing)
 

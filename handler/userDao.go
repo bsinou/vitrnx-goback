@@ -20,10 +20,30 @@ import (
 func GetUsers(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
 	var users []model.User
-	db.Preload("Roles").Find(&users)
+	err := db.Preload("Roles").Find(&users).Error
+	if err != nil {
+		log.Println("could not list users: " + err.Error())
+		c.JSON(503, "cannot list users")
+		return
+	}
 
 	// TODO manage adding roles in the list
 	c.JSON(200, gin.H{"users": users})
+}
+
+func GetRoles(c *gin.Context) {
+	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	var roles []model.Role
+	err := db.Find(&roles).Error
+
+	if err != nil {
+		log.Println("could not list roles: " + err.Error())
+		c.JSON(503, "cannot list roles")
+		return
+	}
+
+	// TODO manage adding roles in the list
+	c.JSON(200, gin.H{"roles": roles})
 }
 
 /* CRUD */
