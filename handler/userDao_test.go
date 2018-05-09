@@ -47,7 +47,7 @@ func TestUserDao_CRUD(t *testing.T) {
 
 		var roles []model.Role
 		db.Find(&roles)
-		So(len(roles), ShouldEqual, 1)
+		So(len(roles), ShouldEqual, 4)
 
 		var users []model.User
 		db.Preload("Roles").Find(&users)
