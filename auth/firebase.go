@@ -69,7 +69,7 @@ func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, ui
 	// if err != nil {
 	// 	return fmt.Errorf("cannot connect to firebase: %v", err)
 	// }
-	// client, err := fbApp.Auth(ctx)
+	// fbClient, err := fbApp.Auth(ctx)
 	// if err != nil {
 	// 	return fmt.Errorf("error getting Auth client: %v", err)
 	// }
@@ -78,7 +78,7 @@ func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, ui
 		return err
 	}
 
-	token, err := client.VerifyIDToken(jwt)
+	token, err := client.VerifyIDToken(ctx, jwt)
 	if err != nil {
 		return fmt.Errorf("JWT validation failed:  %v", err)
 	}
@@ -93,6 +93,17 @@ func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, ui
 
 // ListExistingUsers retrieves all users from firebase
 func ListExistingUsers(ctx *gin.Context) error { //, uid
+	// credOption := option.WithCredentialsFile(credFilePath())
+	// fbApp, err := firebase.NewApp(ctx, nil, credOption)
+	// // TODO add retry
+	// if err != nil {
+	// 	return fmt.Errorf("cannot connect to firebase: %v", err)
+	// }
+	// fbClient, err := fbApp.Auth(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("error getting Auth client: %v", err)
+	// }
+
 	client, err := getFireBaseClient(ctx)
 	if err != nil {
 		return err
