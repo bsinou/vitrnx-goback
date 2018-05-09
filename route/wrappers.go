@@ -50,6 +50,13 @@ func checkCredentials() gin.HandlerFunc {
 		// Useless
 		// c.Next()
 	}
+
+}
+
+func addUserMeta() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		auth.WithUserMeta(c)
+	}
 }
 
 func cors() gin.HandlerFunc {
@@ -73,6 +80,8 @@ func cors() gin.HandlerFunc {
 		// 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
 	}
 }
+
+// TODO mettre en lower case....
 
 // Connect middleware makes the various `db` objects available for each handler
 func Connect() gin.HandlerFunc {

@@ -29,6 +29,12 @@ func PutUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*gorm.DB)
 	user := c.MustGet(model.KeyUser).(model.User)
 
+	// TODO Check:
+	// -> Put simple registered role on creation
+	// -> explicitly copy editable properties when editing self
+	// -> double check permission when editing roles
+	// -> only admin users can change admin & user admin roles
+
 	if user.Name != "" && user.Email != "" {
 		db.Create(&user)
 		c.JSON(201, gin.H{"success": user})

@@ -87,7 +87,7 @@ func CheckCredentialAgainstFireBase(ctx *gin.Context, jwt string) error { //, ui
 	cs := token.Claims
 	ctx.Set(model.KeyUserID, cs[model.FbKeyUserID].(string))
 	ctx.Set(model.KeyEmailVerified, cs[model.FbKeyEmailVerified].(bool))
-	WithUserMeta(ctx)
+
 	return nil
 }
 

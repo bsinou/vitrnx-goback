@@ -23,7 +23,7 @@ func TestPostDao_CRUD(t *testing.T) {
 		s := dummydata.MgoSession.Clone()
 		defer s.Close()
 		db := s.DB(dummydata.Mongo.Database)
-		ctx.Set(model.KeyDb, db)
+		ctx.Set(model.KeyDataDb, db)
 
 		var post model.Post
 		err := json.Unmarshal([]byte(dummydata.TestPost1), &post)
