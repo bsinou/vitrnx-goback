@@ -36,9 +36,9 @@ func declareRoutes(r *gin.Engine) {
 		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
 
 		// REST
-		user.GET("", handler.GetUsers) // query with params
-		user.POST("", checkCredentialsForUserCreation(), handler.PutUser)
+		user.GET("", handler.GetUsers)                 // query with params
 		user.GET(":"+model.KeyUserID, handler.GetUser) // get one
+		user.POST("", checkCredentialsForUserCreation(), handler.PutUser)
 	}
 
 	// Posts

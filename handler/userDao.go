@@ -48,10 +48,10 @@ func PutUser(c *gin.Context) {
 
 func GetUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
-	id := c.Params.ByName("id")
+	id := c.Params.ByName(model.KeyUserID)
 	var user model.User
-	// err := db.Preload("Roles").Where(&model.User{UserID: id}).First(&user).Error
-	err := db.Preload("Roles").First(&user, id).Error
+	err := db.Preload("Roles").Where(&model.User{UserID: id}).First(&user).Error
+	// err := db.Preload("Roles").First(&user, id).Error
 	if err != nil {
 		log.Println("could not retrieve user: " + err.Error())
 		c.JSON(503, "User not found, server error")
@@ -70,7 +70,7 @@ func GetUser(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
 
-	id := c.Params.ByName("id")
+	id := c.Params.ByName(model.KeyUserID)
 	var user model.User
 	db.First(&user, id)
 
@@ -102,7 +102,7 @@ func DeleteUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
 
 	// Get id user
-	id := c.Params.ByName("id")
+	id := c.Params.ByName(model.KeyUserID)
 	var user model.User
 	// SELECT * FROM users WHERE id = 1;
 	db.First(&user, id)
