@@ -66,7 +66,7 @@ func cors() gin.HandlerFunc {
 		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
 
 		if c.Request.Method == "OPTIONS" {
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT, PATCH")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			// Headers have been set, no need to go further
 			c.Abort()
@@ -106,23 +106,19 @@ func Connect() gin.HandlerFunc {
 
 /* USER */
 
-// checkCredentials calls the authentication API to verify the token
-func checkCredentialsForUserCreation() gin.HandlerFunc {
+// TODO Check:
+// -> Put simple registered role on creation
+// -> explicitly copy editable properties when editing self
+// -> double check permission when editing roles
+// -> only admin users can change admin & user admin roles
+
+// applyUsersPolicies calls the authentication API to verify the token
+func applyUserCreationPolicies() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("Checking credentials B4 user creation\n")
-
-		// Real check
-		jwt := c.Request.Header.Get(model.KeyAuth)
-
-		err := auth.CheckCredentialAgainstFireBase(c, jwt)
-		if err != nil {
-			log.Printf("firebase credentials validation failed\n")
-			c.JSON(503, gin.H{"error": "Unauthorized"})
-			c.Abort()
-			return
-		}
-
 		userID := c.MustGet(model.KeyUserID).(string)
+
+		log.Printf("Applying user creation policie\n")
+
 		var user model.User
 		c.Bind(&user)
 		// TODO enhance this will only be true upon user creation
@@ -131,9 +127,51 @@ func checkCredentialsForUserCreation() gin.HandlerFunc {
 			c.JSON(503, gin.H{"error": "Unauthorized"})
 			c.Abort()
 		}
+		c.Set(model.KeyEditedUser, user)
+	}
+}
 
-		c.Set(model.KeyUser, user)
+func applyUserUpdatePolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Applying user update policies\n")
 
+		userID := c.MustGet(model.KeyUserID).(string)
+		roles := c.MustGet(model.KeyUserRoles).([]string)
+
+		editedUserID := c.Param("id")
+
+		if userID != editedUserID && !(contains(roles, model.RoleAdmin) || contains(roles, model.RoleUserAdmin)) {
+			log.Printf("user ID differ: %s vs %s \n", userID, editedUserID)
+			c.JSON(403, gin.H{"error": "Forbidden"})
+			c.Abort()
+			return
+		}
+
+		var receivedUser model.User
+		c.Bind(&receivedUser)
+
+		c.Set(model.KeyEditedUser, receivedUser)
+	}
+}
+
+func applyUserRolesUpdatePolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Applying user roles update policies\n")
+
+		roles := c.MustGet(model.KeyUserRoles).([]string)
+
+		if !(contains(roles, model.RoleAdmin) || contains(roles, model.RoleUserAdmin)) {
+			c.JSON(403, gin.H{"error": "Forbidden"})
+			c.Abort()
+			return
+		}
+
+		log.Printf("About to bind\n")
+		var receivedRoles []string
+		c.Bind(&receivedRoles)
+		c.Set(model.KeyEditedUserRoles, receivedRoles)
+		log.Printf("Role set: %v\n", receivedRoles)
+		c.Next()
 	}
 }
 

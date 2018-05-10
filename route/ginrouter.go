@@ -30,15 +30,18 @@ func declareRoutes(r *gin.Engine) {
 	user := r.Group(model.ApiPrefix + "users")
 	{
 		// Configure wrappers for this group
-		user.Use(loggingHandler(), cors(), checkCredentials(), Connect())
+		user.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta())
 		// Enable fetch with js and CORS
-		user.OPTIONS("", handler.DoNothing)    // POST
-		user.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
+		user.OPTIONS("", handler.DoNothing)
+		user.OPTIONS(":id", handler.DoNothing)
+		user.OPTIONS(":id/roles", handler.DoNothing)
 
 		// REST
-		user.GET("", handler.GetUsers)                 // query with params
-		user.GET(":"+model.KeyUserID, handler.GetUser) // get one
-		user.POST("", checkCredentialsForUserCreation(), handler.PutUser)
+		user.GET("", handler.GetUsers)                                 // query with params
+		user.GET(":"+model.KeyUserID, handler.GetUser)                 // get one
+		user.POST("", applyUserCreationPolicies(), handler.CreateUser) // CREATION
+		user.PATCH(":id", applyUserUpdatePolicies(), handler.PatchUser)
+		user.PATCH(":id/roles", applyUserRolesUpdatePolicies(), handler.PatchUserRoles)
 	}
 
 	// Roles

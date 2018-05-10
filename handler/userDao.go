@@ -3,6 +3,7 @@ package handler
 // Thanks @etiennerouzeaud to https://gist.github.com/EtienneR/ed522e3d31bc69a9dec3335e639fcf60 && https://medium.com/@etiennerouzeaud/how-to-create-a-basic-restful-api-in-go-c8e032ba3181
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -26,8 +27,6 @@ func GetUsers(c *gin.Context) {
 		c.JSON(503, "cannot list users")
 		return
 	}
-
-	// TODO manage adding roles in the list
 	c.JSON(200, gin.H{"users": users})
 }
 
@@ -48,15 +47,9 @@ func GetRoles(c *gin.Context) {
 
 /* CRUD */
 
-func PutUser(c *gin.Context) {
+func CreateUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
-	user := c.MustGet(model.KeyUser).(model.User)
-
-	// TODO Check:
-	// -> Put simple registered role on creation
-	// -> explicitly copy editable properties when editing self
-	// -> double check permission when editing roles
-	// -> only admin users can change admin & user admin roles
+	user := c.MustGet(model.KeyEditedUser).(model.User)
 
 	if user.Name != "" && user.Email != "" {
 		db.Create(&user)
@@ -64,6 +57,62 @@ func PutUser(c *gin.Context) {
 	} else {
 		c.JSON(422, gin.H{"error": "Not enough info"})
 	}
+}
+
+func PatchUser(c *gin.Context) {
+	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	editedUser := c.MustGet(model.KeyEditedUser).(model.User)
+
+	var loadedUser model.User
+	err := db.Where(&model.User{UserID: editedUser.UserID}).First(&loadedUser).Error
+	if err != nil {
+		log.Println("could not retrieve user: " + err.Error())
+		c.JSON(503, "User not found, server error")
+		return
+	}
+
+	// Add an indirection to prevent updating reserved info
+	loadedUser.Name = editedUser.Name
+	loadedUser.Email = editedUser.Email
+	loadedUser.Address = editedUser.Address
+
+	err = db.Model(&loadedUser).Update("name", "email", "address").Error
+	if err != nil {
+		log.Println("could not update user: " + err.Error())
+		c.JSON(503, "Server error while updating user")
+		return
+	}
+
+	c.JSON(201, gin.H{"user": loadedUser})
+}
+
+func PatchUserRoles(c *gin.Context) {
+	fmt.Printf("AAA About to patch user roles\n")
+
+	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	toEditUserID := c.Param("id")
+	retrievedRoles := c.MustGet(model.KeyEditedUserRoles).([]string)
+
+	fmt.Printf("About to patch user roles: %v; %v \n", toEditUserID, retrievedRoles)
+
+	var loadedUser model.User
+	err := db.Preload("Roles").Where(&model.User{UserID: toEditUserID}).First(&loadedUser).Error
+	if err != nil {
+		log.Println("could not retrieve user: " + err.Error())
+		c.JSON(503, "User not found, server error")
+		return
+	}
+
+	roles := make([]*model.Role, len(retrievedRoles))
+	for i, r := range retrievedRoles {
+		var ro model.Role
+		db.Where(&model.Role{RoleID: r}).First(&ro)
+		roles[i] = &ro
+	}
+
+	db.Model(&loadedUser).Association("Roles").Replace(roles)
+	// db.Save(&loadedUser)
+	c.JSON(201, gin.H{"user": loadedUser})
 }
 
 func GetUser(c *gin.Context) {

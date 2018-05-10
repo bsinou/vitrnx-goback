@@ -19,6 +19,9 @@ const KeyAuth = "authorization"
 const KeyClaims = "claims"
 const KeyUserRoles = "userRoles"
 
+const KeyEditedUser = "user"
+const KeyEditedUserRoles = "editedUserRoles"
+
 // Posts
 const KeyPost = "post"
 const KeyPath = "path"
