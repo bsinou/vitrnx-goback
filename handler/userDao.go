@@ -72,18 +72,25 @@ func PatchUser(c *gin.Context) {
 	}
 
 	// Add an indirection to prevent updating reserved info
-	loadedUser.Name = editedUser.Name
-	loadedUser.Email = editedUser.Email
-	loadedUser.Address = editedUser.Address
+	if editedUser.Name != "" {
+		loadedUser.Name = editedUser.Name
+	}
+	if editedUser.Email != "" {
+		loadedUser.Email = editedUser.Email
+	}
+	if editedUser.Address != "" {
+		loadedUser.Address = editedUser.Address
+	}
 
-	err = db.Model(&loadedUser).Update("name", "email", "address").Error
+	// err = db.Model(&loadedUser).Update("name", "email", "address").Error
+	err = db.Save(&loadedUser).Error
 	if err != nil {
 		log.Println("could not update user: " + err.Error())
 		c.JSON(503, "Server error while updating user")
 		return
 	}
 
-	c.JSON(201, gin.H{"user": loadedUser})
+	c.JSON(200, gin.H{"user": loadedUser})
 }
 
 func PatchUserRoles(c *gin.Context) {
@@ -112,7 +119,7 @@ func PatchUserRoles(c *gin.Context) {
 
 	db.Model(&loadedUser).Association("Roles").Replace(roles)
 	// db.Save(&loadedUser)
-	c.JSON(201, gin.H{"user": loadedUser})
+	c.JSON(200, gin.H{"user": loadedUser})
 }
 
 func GetUser(c *gin.Context) {
