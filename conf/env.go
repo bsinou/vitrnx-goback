@@ -19,7 +19,7 @@ var (
 	// in the resulting binary when doing 'make main'
 
 	// VitrnxVersion exposes current version of the backend
-	VitrnxVersion = "0.1.0"
+	VitrnxVersion = "0.1.3-SNAPSHOT"
 	// BuildTimestamp exposes running app build time stamp
 	BuildTimestamp = ""
 	// BuildRevision exposes the git id that was at master origin head at the time of building
@@ -32,11 +32,12 @@ var (
 func GetConfigFile(fname string) (string, error) {
 	for _, p := range GetKnownConfFolderPaths() {
 		cp := filepath.Join(p, fname)
-		fmt.Printf("Looking for %s, checking %s: [%s]\n", fname, p, cp)
+		// fmt.Printf("Looking for %s, checking %s: [%s]\n", fname, p, cp)
 		if _, err := os.Stat(cp); err == nil {
 			return filepath.Join(p, fname), nil
 		} else {
-			fmt.Println("Not found: " + err.Error())
+			fmt.Println(err.Error())
+			// fmt.Printf("No file named %s found in %s: %v\n", fname, p, err.Error())
 		}
 	}
 	return "", fmt.Errorf("could not find %s in known config folders", fname)

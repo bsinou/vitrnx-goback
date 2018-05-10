@@ -12,6 +12,8 @@ const RoleModerator = "MODERATOR"
 const RoleEditor = "EDITOR"
 const RoleVolunteer = "VOLUNTEER"
 const RoleGuest = "GUEST"
+const RoleRegistered = "REGISTERED"
+const RoleAnonymous = "ANONYMOUS"
 
 // Known Policies
 const PolicyCanRead = "CAN_READ"

@@ -3,7 +3,6 @@ package handler
 // Thanks @etiennerouzeaud to https://gist.github.com/EtienneR/ed522e3d31bc69a9dec3335e639fcf60 && https://medium.com/@etiennerouzeaud/how-to-create-a-basic-restful-api-in-go-c8e032ba3181
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -51,8 +50,18 @@ func CreateUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
 	user := c.MustGet(model.KeyEditedUser).(model.User)
 
+	var dflt model.Role
+	db.Where(&model.Role{RoleID: model.RoleRegistered}).First(&dflt)
+	user.Roles = []model.Role{dflt}
+
 	if user.Name != "" && user.Email != "" {
-		db.Create(&user)
+		err := db.Create(&user).Error
+		if err != nil {
+			msg := "could not create user: " + err.Error()
+			log.Println(msg)
+			c.JSON(503, msg)
+			return
+		}
 		c.JSON(201, gin.H{"success": user})
 	} else {
 		c.JSON(422, gin.H{"error": "Not enough info"})
@@ -82,7 +91,6 @@ func PatchUser(c *gin.Context) {
 		loadedUser.Address = editedUser.Address
 	}
 
-	// err = db.Model(&loadedUser).Update("name", "email", "address").Error
 	err = db.Save(&loadedUser).Error
 	if err != nil {
 		log.Println("could not update user: " + err.Error())
@@ -94,13 +102,9 @@ func PatchUser(c *gin.Context) {
 }
 
 func PatchUserRoles(c *gin.Context) {
-	fmt.Printf("AAA About to patch user roles\n")
-
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
 	toEditUserID := c.Param("id")
 	retrievedRoles := c.MustGet(model.KeyEditedUserRoles).([]string)
-
-	fmt.Printf("About to patch user roles: %v; %v \n", toEditUserID, retrievedRoles)
 
 	var loadedUser model.User
 	err := db.Preload("Roles").Where(&model.User{UserID: toEditUserID}).First(&loadedUser).Error
@@ -117,8 +121,14 @@ func PatchUserRoles(c *gin.Context) {
 		roles[i] = &ro
 	}
 
-	db.Model(&loadedUser).Association("Roles").Replace(roles)
-	// db.Save(&loadedUser)
+	err = db.Model(&loadedUser).Association("Roles").Replace(roles).Error
+	if err != nil {
+		msg := "could not update user roles: " + err.Error()
+		log.Println()
+		c.JSON(503, msg)
+		return
+	}
+
 	c.JSON(200, gin.H{"user": loadedUser})
 }
 

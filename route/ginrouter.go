@@ -61,12 +61,7 @@ func declareRoutes(r *gin.Engine) {
 	posts := r.Group(model.ApiPrefix + "posts")
 	{
 		// Configure wrappers for this group
-
-		// Split JWT check and user meta
-
-		// FIXME
 		posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallPost(), applyPostPolicies())
-		// posts.Use(loggingHandler(), cors(), Connect(), checkCredentials(), unmarshallPost(), applyPostPolicies())
 
 		// Enable fetch with js and CORS
 		posts.OPTIONS("", handler.DoNothing)    // POST

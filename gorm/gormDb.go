@@ -49,7 +49,6 @@ func getDb() *gorm.DB {
 	}
 	// db.LogMode(true) // Display SQL queries
 
-	fmt.Printf("Initialised SQLite DB with file at %s\n", dbFileAbsPath)
 	return db
 }
 
@@ -79,6 +78,8 @@ func createTableIfNeeded(db *gorm.DB) {
 		}
 		db.Save(&model.Role{RoleID: tokens[0], Label: tokens[1]})
 	}
+
+	fmt.Printf("Initialised SQLite DB with file at %s\n", dbFileAbsPath)
 
 	// knownRoles := viper.GetStringMapString(conf.KeyKnownRoles)
 	// for k, v := range knownRoles {

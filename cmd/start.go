@@ -34,7 +34,7 @@ var StartCmd = &cobra.Command{
 			ts = "on " + ts
 		}
 
-		cmd.Print(fmt.Sprintf("Vitrnx Go Backend v%s for [%s] built %s\n ==> Starting in %s mode.\n\n", conf.VitrnxInstanceID, conf.VitrnxVersion, ts, conf.Env))
+		cmd.Print(fmt.Sprintf("\n\n%s - Vitrnx Go Backend v%s (built %s)\n ==> Starting in %s mode.\n\n", conf.VitrnxInstanceID, conf.VitrnxVersion, ts, conf.Env))
 
 		// TODO Implement a better way to initialise services and manage clean shutdown
 		gorm.InitGormRepo()

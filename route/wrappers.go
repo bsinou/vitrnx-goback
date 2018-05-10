@@ -30,7 +30,6 @@ func loggingHandler() gin.HandlerFunc {
 // checkCredentials calls the authentication API to verify the token
 func checkCredentials() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		// Real check
 		jwt := c.Request.Header.Get(model.KeyAuth)
 		if jwt == "" {
@@ -46,11 +45,7 @@ func checkCredentials() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		// Useless
-		// c.Next()
 	}
-
 }
 
 func addUserMeta() gin.HandlerFunc {
@@ -319,13 +314,16 @@ func applyCommentPolicies() gin.HandlerFunc {
 			switch rm {
 			case "POST":
 				// creation
-				// TODO prevent addition when guest
-				// if comment.ID.Hex() == "" {
-				// 	// && !(contains(roles, model.RoleModerator) || contains(roles, model.RoleEditor)) {
-				// 	c.JSON(403, gin.H{"error": "you don't have sufficient permission to add a comment "})
-				// 	c.Abort()
-				// 	return
-				// }
+				if comment.ID.Hex() == "" {
+					break
+					// TODO prevent addition when guest
+					// 	if len(roles) == 0 || len(roles) == 1 && roles[0] == model.RoleAnonymous){
+					// // 	c.JSON(403, gin.H{"error": "you don't have sufficient permission to add a comment "})
+					// // 	c.Abort()
+					// // 	return
+					// 	}
+				}
+
 				// update only by the post author or a moderator
 				if !(contains(roles, model.RoleModerator) || comment.AuthorID == userID) {
 					c.JSON(403, gin.H{"error": "you don't have sufficient permission to update this comment"})
