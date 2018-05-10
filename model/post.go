@@ -23,6 +23,7 @@ type Post struct {
 	Thumb    string        `json:"thumb" binding:"required" bson:"thumb"`
 	Body     string        `json:"body" bson:"body"`
 	Audience string        `json:"audience" bson:"audience"`
+	Weight   int           `json:"weight,omitempty" bson:"weight"`
 
 	CreatedOn int64  `json:"createdOn,omitempty" bson:"createdOn"`
 	UpdatedOn int64  `json:"updatedOn,omitempty" bson:"updatedOn"`
