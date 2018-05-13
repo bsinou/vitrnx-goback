@@ -134,6 +134,23 @@ func ReadPost(c *gin.Context) {
 	c.JSON(201, gin.H{"post": post})
 }
 
+// ListPostComments retrieves the comment for a given post
+func ListPostComments(c *gin.Context) {
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
+	comments := []model.Comment{}
+
+	path := c.Param(model.KeyPath)
+	query := bson.M{model.KeyParentID: bson.RegEx{path, ""}}
+	err := db.C(model.CommentCollection).Find(query).Sort("-date").All(&comments)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(200, gin.H{"comments": comments})
+}
+
 // DeletePost definitively removes a post from the repository
 func DeletePost(c *gin.Context) {
 	post := c.MustGet(model.KeyPost).(model.Post)

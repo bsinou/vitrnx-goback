@@ -64,15 +64,17 @@ func declareRoutes(r *gin.Engine) {
 		posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallPost(), applyPostPolicies())
 
 		// Enable fetch with js and CORS
-		posts.OPTIONS("", handler.DoNothing)    // POST
-		posts.OPTIONS(":id", handler.DoNothing) // PUT, DELETE
+		posts.OPTIONS("", handler.DoNothing)                            // POST
+		posts.OPTIONS(":"+model.KeyPath, handler.DoNothing)             // PUT, DELETE
+		posts.OPTIONS(":"+model.KeyPath+"/comments", handler.DoNothing) // PUT, DELETE
 
 		// REST
-		posts.GET("", handler.ListPosts)                    // query with params
-		posts.GET(":"+model.KeyPath, handler.ReadPost)      // get one
-		posts.POST("", handler.PutPost)                     // new post
-		posts.POST(":"+model.KeyPath, handler.PutPost)      // update post
-		posts.DELETE(":"+model.KeyPath, handler.DeletePost) // delete post
+		posts.GET("", handler.ListPosts)                                   // query with params
+		posts.GET(":"+model.KeyPath, handler.ReadPost)                     // get one
+		posts.GET(":"+model.KeyPath+"/comments", handler.ListPostComments) // get post comments
+		posts.POST("", handler.PutPost)                                    // new post
+		posts.POST(":"+model.KeyPath, handler.PutPost)                     // update post
+		posts.DELETE(":"+model.KeyPath, handler.DeletePost)                // delete post
 	}
 
 	// Comments
