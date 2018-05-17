@@ -34,14 +34,17 @@ func checkCredentials() gin.HandlerFunc {
 		jwt := c.Request.Header.Get(model.KeyAuth)
 		if jwt == "" {
 			// No JWT cannot continue
-			c.JSON(401, gin.H{"error": "No JWT token provided, please log out and back in again"})
+			msg := "No JWT token provided, please log out and back in again"
+			log.Println(msg)
+			c.JSON(401, gin.H{"error": msg})
 			c.Abort()
 			return
 		}
 
 		err := auth.CheckCredentialAgainstFireBase(c, jwt)
 		if err != nil {
-			c.JSON(401, gin.H{"error": "Could not validate token: " + err.Error()})
+			msg := "Could not validate token: " + err.Error()
+			c.JSON(401, gin.H{"error": msg})
 			c.Abort()
 			return
 		}
@@ -341,6 +344,62 @@ func applyCommentPolicies() gin.HandlerFunc {
 				}
 			}
 		}
+	}
+}
+
+/* TASKS */
+
+func unmarshallTask() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rm := c.Request.Method
+		if rm == "POST" || rm == "MOVE" {
+			task := model.Task{}
+			err := c.Bind(&task)
+			if err != nil {
+				fmt.Printf("Could not bind task %v\n", err)
+				c.Error(err)
+				c.Abort()
+				return
+			}
+
+			if task.Desc == "" {
+				err = fmt.Errorf("description is required, could not upsert")
+				fmt.Println(err.Error())
+				c.Error(err)
+				return
+			}
+			c.Set(model.KeyTask, task)
+		} else if rm == "DELETE" {
+			db := c.MustGet(model.KeyDataDb).(*mgo.Database)
+			task := model.Task{}
+			id := c.Param(model.KeyMgoID)
+			idQuery := bson.M{model.KeyMgoID: bson.ObjectIdHex(id)}
+			err := db.C(model.TaskCollection).Find(idQuery).One(&task)
+			if err != nil {
+				fmt.Printf("Could not find task to delete with id %s: %s\n", id, err.Error())
+				c.Error(err)
+				c.Abort()
+				return
+			}
+			c.Set(model.KeyTask, task)
+		}
+	}
+}
+
+// applyTaskPolicies limit possible actions depending on user role
+func applyTaskPolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// shortcut
+		roles := c.MustGet(model.KeyUserRoles).([]string)
+
+		if !(contains(roles, model.RoleAdmin) ||
+			contains(roles, model.RoleVolunteer) ||
+			contains(roles, model.RoleUserAdmin)) {
+			c.JSON(403, gin.H{"error": "you don't have sufficient permission to see tasks"})
+			c.Abort()
+			return
+		}
+		// TODO enhance policy management
 	}
 }
 

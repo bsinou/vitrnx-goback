@@ -22,6 +22,9 @@ const KeyUserRoles = "userRoles"
 const KeyEditedUser = "user"
 const KeyEditedUserRoles = "editedUserRoles"
 
+// User Meta
+const KeyPresence = "presence"
+
 // Posts
 const KeyPost = "post"
 const KeyPath = "path"
@@ -30,6 +33,11 @@ const KeyTags = "tags"
 // Comments
 const KeyComment = "comment"
 const KeyParentID = "parentId"
+
+// Tasks
+const KeyTask = "task"
+const KeyCategory = "category"
+const KeyCategoryID = "categoryId"
 
 /* FIREBASE specific keys */
 
