@@ -30,7 +30,15 @@ func ListPresences(c *gin.Context) {
 // PutPresence simply creates or updates a guest presence in the document repository.
 func PutPresence(c *gin.Context) {
 	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
-	presence := c.MustGet(model.KeyPresence).(model.Presence)
+
+	presence := model.Presence{}
+	err := c.Bind(&presence)
+	if err != nil {
+		fmt.Printf("Could not bind presence %v\n", err)
+		c.Error(err)
+		c.Abort()
+		return
+	}
 
 	presences := db.C(model.PresenceCollection)
 	creation := false
@@ -39,24 +47,27 @@ func PutPresence(c *gin.Context) {
 		creation = true
 		// Set creation info
 		presence.ID = bson.NewObjectId()
-		if presence.UserID == "" {
-			presence.UserID = c.MustGet(model.KeyUserID).(string)
-		} else {
-			var existing model.Presence
-			query := bson.M{model.KeyUserID: presence.UserID}
-			err := db.C(model.PresenceCollection).Find(query).One(&existing)
-			if err != nil {
-				fmt.Printf("Insert failed: %s\n", err.Error())
-				c.Error(err)
-				return
-			}
-			if presence.ID.Hex() != "" {
-				err2 := fmt.Errorf("already existing, cannot create") // already existing, cannot create
-				fmt.Println(err2.Error())
-				c.Error(err2)
-				return
-			}
-		}
+
+		// if presence.UserID == "" {
+		// 	presence.UserID = c.MustGet(model.KeyUserID).(string)
+		// }
+
+		// else {
+		// 	var existing model.Presence
+		// 	query := bson.M{model.KeyUserID: presence.UserID}
+		// 	err := db.C(model.PresenceCollection).Find(query).One(&existing)
+		// 	if err != nil {
+		// 		fmt.Printf("Insert failed: %s\n", err.Error())
+		// 		c.Error(err)
+		// 		return
+		// 	}
+		// 	if presence.ID.Hex() != "" {
+		// 		err2 := fmt.Errorf("already existing, cannot create") // already existing, cannot create
+		// 		fmt.Println(err2.Error())
+		// 		c.Error(err2)
+		// 		return
+		// 	}
+		// }
 	}
 
 	// Always update the update (...) info
@@ -83,7 +94,10 @@ func PutPresence(c *gin.Context) {
 
 func ReadPresence(c *gin.Context) {
 	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
-	query := bson.M{model.KeyUserID: c.Param(model.KeyUserID)}
+
+	userID := c.Param(model.KeyUserID)
+	fmt.Printf("Reading presence for: %s\n", userID)
+	query := bson.M{model.KeyUserID: userID}
 	presence := model.Presence{}
 	err := db.C(model.PresenceCollection).Find(query).One(&presence)
 	if err != nil {

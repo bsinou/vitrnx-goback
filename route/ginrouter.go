@@ -51,7 +51,7 @@ func declareRoutes(r *gin.Engine) {
 	{
 		meta.Use(addUserMeta())
 		meta.OPTIONS("", handler.DoNothing)
-		meta.OPTIONS(":"+model.KeyMgoID, handler.DoNothing)
+		meta.OPTIONS(":"+model.KeyUserID, handler.DoNothing)
 		// meta.OPTIONS("/by-day", handler.DoNothing)
 
 		// TODO implement
@@ -59,7 +59,7 @@ func declareRoutes(r *gin.Engine) {
 
 		// REST
 		meta.GET(":"+model.KeyUserID, handler.ReadPresence)
-		meta.POST(":"+model.KeyMgoID, applyUserCreationPolicies(), handler.PutPresence)
+		meta.POST(":"+model.KeyUserID, applyUserMetaPolicies(), handler.PutPresence)
 	}
 
 	// Roles

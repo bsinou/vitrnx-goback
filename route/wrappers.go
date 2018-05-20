@@ -173,6 +173,23 @@ func applyUserRolesUpdatePolicies() gin.HandlerFunc {
 	}
 }
 
+func applyUserMetaPolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Applying user meta policies\n")
+
+		userID := c.MustGet(model.KeyUserID).(string)
+		roles := c.MustGet(model.KeyUserRoles).([]string)
+
+		editedUserID := c.Param(model.KeyUserID)
+		if userID != editedUserID && !(contains(roles, model.RoleAdmin) || contains(roles, model.RoleUserAdmin)) {
+			log.Printf("user ID differ: %s vs %s \n", userID, editedUserID)
+			c.JSON(403, gin.H{"error": "Forbidden"})
+			c.Abort()
+			return
+		}
+	}
+}
+
 /* POSTS */
 
 // unmarshallPost retrieves the post from the context and store it again as a model.Post, for POST and MOVE requests.
