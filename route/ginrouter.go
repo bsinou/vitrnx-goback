@@ -50,7 +50,7 @@ func declareRoutes(r *gin.Engine) {
 		user.GET(":"+model.KeyUserID, handler.GetUser)                 // get one
 		user.POST("", applyUserCreationPolicies(), handler.CreateUser) // CREATION
 		user.PATCH(":id", applyUserUpdatePolicies(), handler.PatchUser)
-		user.DELETE(":id", applyUserDeletePolicies(), handler.DeleteUser)
+		user.DELETE(":"+model.KeyUserID, applyUserDeletePolicies(), handler.DeleteUser)
 		user.PATCH(":id/roles", applyUserRolesUpdatePolicies(), handler.PatchUserRoles)
 	}
 

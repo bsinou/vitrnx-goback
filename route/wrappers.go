@@ -168,10 +168,10 @@ func applyUserDeletePolicies() gin.HandlerFunc {
 			return
 		}
 
-		var receivedUser model.User
-		c.Bind(&receivedUser)
+		// var receivedUser model.User
+		// c.Bind(&receivedUser)
 
-		c.Set(model.KeyEditedUser, receivedUser)
+		// c.Set(model.KeyEditedUser, receivedUser)
 	}
 }
 

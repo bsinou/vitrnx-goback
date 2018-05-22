@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	jgorm "github.com/jinzhu/gorm"
@@ -228,22 +227,31 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
-	toDeleteUser := c.MustGet(model.KeyUser).(model.User)
+	// toDeleteUser := c.MustGet(model.KeyUser).(model.User)
 
-	// toEditUserID := c.Param("id")
-	// fmt.Printf("### About to delete, checking user ID %v\n", toEditUserID)
+	// toDeleteUserID := c.Param("id")
 
-	// var count int
-	// err := db.Where(&model.User{UserID: toEditUserID}).Count(&count).Error
-	// fmt.Printf("### About to delete, found %v users with error %v \n", count, err)
+	id := c.Params.ByName(model.KeyUserID)
 
-	err := db.Delete(&toDeleteUser).Error
+	var user model.User
+	err := db.Where(&model.User{UserID: id}).First(&user).Error
 	if err != nil {
-		msg := fmt.Sprintf("could not delete user with ID %s: %s ", toDeleteUser.ID, err.Error())
+		msg := fmt.Sprintf("could not found user with ID %s to delete: %s ", id, err.Error())
 		log.Println(msg)
-		c.JSON(503, "User not found, server error")
+		c.JSON(404, msg)
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, "/users")
+	fmt.Printf("### About to delete, found %v  with error %v \n", user.Email, err)
+
+	err = db.Delete(&user).Error
+	if err != nil {
+		msg := fmt.Sprintf("could not delete user with ID %s: %s ", id, err.Error())
+		log.Println(msg)
+		c.JSON(503, msg)
+		return
+	}
+
+	c.JSON(200, gin.H{"success": "User has been deleted"})
+
 }
