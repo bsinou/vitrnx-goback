@@ -10,8 +10,10 @@ type User struct {
 	Email   string `gorm:"not null" json:"email"`
 	Address string `gorm:"" json:"address"`
 	Roles   []Role `gorm:"many2many:user_roles" json:"roles"`
+
 	// Ease front end and JSON communication, not persisted
-	UserRoles []string `gorm:"-" json:"userRoles"`
+	UserRoles []string               `gorm:"-" json:"userRoles"`
+	Meta      map[string]interface{} `gorm:"-" json:"meta"`
 }
 
 // Role is used to manage permissions

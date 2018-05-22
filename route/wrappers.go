@@ -152,6 +152,29 @@ func applyUserUpdatePolicies() gin.HandlerFunc {
 	}
 }
 
+func applyUserDeletePolicies() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log.Printf("Applying user delete policies\n")
+
+		userID := c.MustGet(model.KeyUserID).(string)
+		roles := c.MustGet(model.KeyUserRoles).([]string)
+
+		editedUserID := c.Param("id")
+
+		if !(contains(roles, model.RoleAdmin) || contains(roles, model.RoleUserAdmin)) {
+			msg := fmt.Sprintf("As user with ID %s, you don't have sufficient rights to delete user %s. Incident will be reported.", userID, editedUserID)
+			c.JSON(403, gin.H{"error": msg})
+			c.Abort()
+			return
+		}
+
+		var receivedUser model.User
+		c.Bind(&receivedUser)
+
+		c.Set(model.KeyEditedUser, receivedUser)
+	}
+}
+
 func applyUserRolesUpdatePolicies() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Printf("Applying user roles update policies\n")

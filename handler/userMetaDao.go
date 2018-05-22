@@ -25,6 +25,100 @@ func ListPresences(c *gin.Context) {
 	c.JSON(200, gin.H{"presences": presences})
 }
 
+type byDay struct {
+	ID      string
+	Label   string
+	AdultNb int
+	ChildNb int
+}
+
+// var days []string = []string{"D1","D2","D3","D4","D5","D6","D7","D8"}
+
+func GuestTotal(c *gin.Context) {
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
+	presences := []model.Presence{}
+	fmt.Println("Here")
+
+	err := db.C(model.PresenceCollection).Find(nil).All(&presences)
+	if err != nil {
+		c.Error(err)
+	}
+
+	totalAdults := 0
+	totalChildren := 0
+	for _, p := range presences {
+		if !p.IsComing {
+			continue
+		}
+		totalAdults += int(p.AdultNb)
+		totalChildren += int(p.ChildNb)
+	}
+
+	// c.JSON(200, gin.H{"guestsByDay": map[string]string{
+	// 	"totalAdults":   strconv.Itoa(totalChildren),
+	// 	"totalChildren": strconv.Itoa(totalChildren),
+	// }})
+	c.JSON(200, gin.H{"guestsByDay": map[string]int{
+		"totalAdults":   totalAdults,
+		"totalChildren": totalChildren,
+	}})
+
+}
+
+func ListGuestsByDay(c *gin.Context) {
+	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
+	presences := []model.Presence{}
+
+	err := db.C(model.PresenceCollection).Find(nil).All(&presences)
+	if err != nil {
+		c.Error(err)
+	}
+
+	// well well well ...
+	var res [8]byDay
+	for _, p := range presences {
+		if !p.IsComing {
+			continue
+		}
+		if p.D1 {
+			res[0].AdultNb += int(p.AdultNb)
+			res[0].ChildNb += int(p.ChildNb)
+		}
+		if p.D2 {
+			res[1].AdultNb += int(p.AdultNb)
+			res[1].ChildNb += int(p.ChildNb)
+		}
+		if p.D3 {
+			res[2].AdultNb += int(p.AdultNb)
+			res[2].ChildNb += int(p.ChildNb)
+		}
+		if p.D4 {
+			res[3].AdultNb += int(p.AdultNb)
+			res[3].ChildNb += int(p.ChildNb)
+		}
+		if p.D5 {
+			res[4].AdultNb += int(p.AdultNb)
+			res[4].ChildNb += int(p.ChildNb)
+		}
+		if p.D6 {
+			res[5].AdultNb += int(p.AdultNb)
+			res[5].ChildNb += int(p.ChildNb)
+		}
+		if p.D7 {
+			res[6].AdultNb += int(p.AdultNb)
+			res[6].ChildNb += int(p.ChildNb)
+		}
+		if p.D8 {
+			res[7].AdultNb += int(p.AdultNb)
+			res[7].ChildNb += int(p.ChildNb)
+		}
+	}
+
+	c.JSON(200, gin.H{"guestsByDay": res})
+}
+
 /* CRUD */
 
 // PutPresence simply creates or updates a guest presence in the document repository.

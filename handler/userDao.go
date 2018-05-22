@@ -3,10 +3,15 @@ package handler
 // Thanks @etiennerouzeaud to https://gist.github.com/EtienneR/ed522e3d31bc69a9dec3335e639fcf60 && https://medium.com/@etiennerouzeaud/how-to-create-a-basic-restful-api-in-go-c8e032ba3181
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	jgorm "github.com/jinzhu/gorm"
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/model"
@@ -19,6 +24,7 @@ import (
 
 func GetUsers(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	datadb := c.MustGet(model.KeyDataDb).(*mgo.Database)
 	var users []model.User
 	err := db.Preload("Roles").Find(&users).Error
 	if err != nil {
@@ -26,7 +32,43 @@ func GetUsers(c *gin.Context) {
 		c.JSON(503, "cannot list users")
 		return
 	}
-	c.JSON(200, gin.H{"users": users})
+
+	updatedUsers := make([]model.User, len(users))
+	for i, user := range users {
+
+		meta := make(map[string]interface{})
+		query := bson.M{"authorId": bson.RegEx{user.UserID, ""}}
+		commentCount, err := datadb.C(model.CommentCollection).Find(query).Count()
+		if err != nil {
+			msg := fmt.Sprintf("could not list comments for user %s: %s", user.Email, err.Error())
+			log.Println(msg)
+			c.JSON(503, msg)
+			return
+		}
+		meta["commentCount"] = commentCount
+
+		var presence model.Presence
+		query = bson.M{model.KeyUserID: bson.RegEx{user.UserID, ""}}
+		err = datadb.C(model.PresenceCollection).Find(query).One(&presence)
+		if err != nil {
+			if err.Error() != "not found" {
+				msg := fmt.Sprintf("could not list presence for user %s: %s", user.Email, err.Error())
+				log.Println(msg)
+				c.JSON(503, msg)
+				return
+			}
+		} else {
+			meta["presence"] = presence
+		}
+
+		bites, err := json.Marshal(&meta)
+		fmt.Println("About to add meta " + string(bites))
+		user.Meta = meta
+		updatedUsers[i] = user
+		// TODO also filter by rights
+	}
+
+	c.JSON(200, gin.H{"users": updatedUsers})
 }
 
 func GetRoles(c *gin.Context) {
@@ -186,17 +228,22 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	toDeleteUser := c.MustGet(model.KeyUser).(model.User)
 
-	// Get id user
-	id := c.Params.ByName(model.KeyUserID)
-	var user model.User
-	// SELECT * FROM users WHERE id = 1;
-	db.First(&user, id)
+	// toEditUserID := c.Param("id")
+	// fmt.Printf("### About to delete, checking user ID %v\n", toEditUserID)
 
-	if user.ID != 0 {
-		db.Delete(&user)
-		c.JSON(200, gin.H{"success": "User #" + id + " deleted"})
-	} else {
-		c.JSON(404, gin.H{"error": "User not found"})
+	// var count int
+	// err := db.Where(&model.User{UserID: toEditUserID}).Count(&count).Error
+	// fmt.Printf("### About to delete, found %v users with error %v \n", count, err)
+
+	err := db.Delete(&toDeleteUser).Error
+	if err != nil {
+		msg := fmt.Sprintf("could not delete user with ID %s: %s ", toDeleteUser.ID, err.Error())
+		log.Println(msg)
+		c.JSON(503, "User not found, server error")
+		return
 	}
+
+	c.Redirect(http.StatusMovedPermanently, "/users")
 }

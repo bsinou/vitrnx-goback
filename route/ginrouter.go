@@ -15,6 +15,13 @@ func StartRouter() {
 	r.Use(loggingHandler(), cors(), checkCredentials(), Connect())
 	declareRoutes(r)
 	log.Fatal(r.Run(":8888"))
+
+	// debug router without auth
+	// x := gin.Default()
+	// x.Use(loggingHandler(), cors(), Connect())
+	// declareRoutes(x)
+	// log.Fatal(x.Run(":9999"))
+
 }
 
 func declareRoutes(r *gin.Engine) {
@@ -43,19 +50,22 @@ func declareRoutes(r *gin.Engine) {
 		user.GET(":"+model.KeyUserID, handler.GetUser)                 // get one
 		user.POST("", applyUserCreationPolicies(), handler.CreateUser) // CREATION
 		user.PATCH(":id", applyUserUpdatePolicies(), handler.PatchUser)
+		user.DELETE(":id", applyUserDeletePolicies(), handler.DeleteUser)
 		user.PATCH(":id/roles", applyUserRolesUpdatePolicies(), handler.PatchUserRoles)
 	}
 
 	// UserMeta
 	meta := r.Group(model.ApiPrefix + "usermeta")
+	presence := r.Group(model.ApiPrefix + "presence")
 	{
 		meta.Use(addUserMeta())
 		meta.OPTIONS("", handler.DoNothing)
 		meta.OPTIONS(":"+model.KeyUserID, handler.DoNothing)
-		// meta.OPTIONS("/by-day", handler.DoNothing)
+		presence.OPTIONS("/guestsByDay", handler.DoNothing)
+		presence.OPTIONS("/guestNb", handler.DoNothing)
 
-		// TODO implement
-		// meta.GET("/by-day", handler.GetByDay)
+		presence.GET("/guestsByDay", handler.ListGuestsByDay)
+		presence.GET("/guestNb", handler.GuestTotal)
 
 		// REST
 		meta.GET(":"+model.KeyUserID, handler.ReadPresence)
