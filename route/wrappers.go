@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/bsinou/vitrnx-goback/auth"
+	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/model"
 	"github.com/bsinou/vitrnx-goback/mongodb"
@@ -59,13 +60,16 @@ func addUserMeta() gin.HandlerFunc {
 
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("Setting CORS policies\n")
+		log.Printf("Setting CORS policies on request %s\n", c.Request.Header.Get("origin"))
 
-		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Add("Access-Control-Allow-Origin", conf.GetAllowedOrigins())
 
 		if c.Request.Method == "OPTIONS" {
 			c.Writer.Header().Set("Access-Control-Allow-Methods", "DELETE, POST, PUT, PATCH")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			// Cache preflight request result during 10 minutes
+			c.Writer.Header().Set("Access-Control-Max-Age", "600")
+
 			// Headers have been set, no need to go further
 			c.Abort()
 			return
@@ -79,10 +83,8 @@ func cors() gin.HandlerFunc {
 	}
 }
 
-// TODO mettre en lower case....
-
-// Connect middleware makes the various `db` objects available for each handler
-func Connect() gin.HandlerFunc {
+// connect middleware makes the various `db` objects available for each handler
+func connect() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Printf("Connecting stores\n")
 

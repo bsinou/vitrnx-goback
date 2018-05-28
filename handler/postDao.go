@@ -23,6 +23,15 @@ func ListPosts(c *gin.Context) {
 	// fmt.Println("Tag: " + queryTag)
 
 	queryTag := c.Query("tag")
+	// countLimit := c.Query("count")
+
+	// count, err := strconv.Atoi(countLimit)
+	// if err != nil {
+	// 	fmt.Printf("Could not deserialize count %s: %s\n", countLimit, err.Error())
+	// 	c.Error(err)
+	// }
+
+	// fmt.Println("Got a count..." + countLimit)
 	if queryTag == "" {
 		err = db.C(model.PostCollection).Find(nil).Sort("-createdOn").All(&posts)
 	} else {
@@ -36,6 +45,9 @@ func ListPosts(c *gin.Context) {
 	// might be enhanced using https://stackoverflow.com/questions/37562873/most-idiomatic-way-to-select-elements-from-an-array-in-golang
 	var updatedPosts []model.Post
 	for _, post := range posts {
+		// if i > count {
+		// 	break
+		// }
 		query := bson.M{model.KeyParentID: bson.RegEx{post.Path, ""}}
 		post.CommentCount, err = db.C(model.CommentCollection).Find(query).Count()
 		updatedPosts = append(updatedPosts, post)
@@ -131,7 +143,7 @@ func ReadPost(c *gin.Context) {
 	}
 
 	// TODO check if current user can see this post
-	c.JSON(201, gin.H{"post": post})
+	c.JSON(200, gin.H{"post": post})
 }
 
 // ListPostComments retrieves the comment for a given post

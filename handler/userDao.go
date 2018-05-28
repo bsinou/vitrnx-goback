@@ -60,8 +60,8 @@ func GetUsers(c *gin.Context) {
 			meta["presence"] = presence
 		}
 
-		bites, err := json.Marshal(&meta)
-		fmt.Println("About to add meta " + string(bites))
+		metaAsBytes, err := json.Marshal(&meta)
+		fmt.Println("Enriching user with following meta: " + string(metaAsBytes))
 		user.Meta = meta
 		updatedUsers[i] = user
 		// TODO also filter by rights

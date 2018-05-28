@@ -53,6 +53,7 @@ func getDb() *gorm.DB {
 }
 
 func createTableIfNeeded(db *gorm.DB) {
+
 	if !db.HasTable(&model.User{}) {
 		db.Set("gorm:table_options", "ENGINE=InnoDB")
 		db.CreateTable(&model.User{}, &model.Role{})
@@ -81,8 +82,9 @@ func createTableIfNeeded(db *gorm.DB) {
 
 	fmt.Printf("Initialised SQLite DB with file at %s\n", dbFileAbsPath)
 
-	// knownRoles := viper.GetStringMapString(conf.KeyKnownRoles)
-	// for k, v := range knownRoles {
-	// 	fmt.Printf("%s - %s\n", k, v)
+	// vknownRoles := viper.GetStringSlice(conf.KeyKnownRoles)
+	// fmt.Printf("#####  vknownRoles length %d\n ", len(vknownRoles))
+	// for i, v := range vknownRoles {
+	// 	fmt.Printf("#%d: %s\n", i, v)
 	// }
 }

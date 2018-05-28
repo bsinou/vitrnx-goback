@@ -29,6 +29,6 @@ type Post struct {
 	UpdatedOn int64  `json:"updatedOn,omitempty" bson:"updatedOn"`
 	UpdatedBy string `json:"updatedBy" bson:"updatedBy"`
 
-	// Convenience fields to communicate with the front end. They are not persisted
+	// Convenience fields to communicate with the front end. Not persisted.
 	CommentCount int `json:"commentCount" bson:"-"`
 }

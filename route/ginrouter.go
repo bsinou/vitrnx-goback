@@ -12,7 +12,7 @@ import (
 
 func StartRouter() {
 	r := gin.Default()
-	r.Use(loggingHandler(), cors(), checkCredentials(), Connect())
+	r.Use(loggingHandler(), cors(), checkCredentials(), connect())
 	declareRoutes(r)
 	log.Fatal(r.Run(":8888"))
 
@@ -21,7 +21,6 @@ func StartRouter() {
 	// x.Use(loggingHandler(), cors(), Connect())
 	// declareRoutes(x)
 	// log.Fatal(x.Run(":9999"))
-
 }
 
 func declareRoutes(r *gin.Engine) {

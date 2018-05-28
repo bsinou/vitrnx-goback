@@ -18,16 +18,27 @@ func ListTasks(c *gin.Context) {
 	var err error
 
 	catID := c.Query(model.KeyCategoryID)
-	fmt.Println("About to query for category " + catID)
-	if catID == "" {
-		err = db.C(model.TaskCollection).Find(nil).Sort("-dueDate").All(&tasks)
-	} else {
-		query := bson.M{model.KeyCategoryID: bson.RegEx{catID, ""}}
-		err = db.C(model.TaskCollection).Find(query).Sort("-dueDate").All(&tasks)
+
+	// showAll := c.Query("showAll")
+	showClosed := c.Query("showClosed")
+
+	query := bson.M{}
+	if !(catID == "" || catID == "all") {
+		query[model.KeyCategoryID] = bson.RegEx{catID, ""}
 	}
+
+	if !(showClosed == "true") {
+		query["closeDate"] = 0
+	}
+
+	// query := bson.M{"closeDate": 0}
+
+	err = db.C(model.TaskCollection).Find(query).Sort("-dueDate").All(&tasks)
 	if err != nil {
 		c.Error(err)
 	}
+
+	// TODO handle filtering
 
 	c.JSON(200, gin.H{"tasks": tasks})
 }

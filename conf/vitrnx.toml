@@ -1,7 +1,7 @@
 # VitrnX sample TOML config file.
 
 # No prefix
-test = "a value from config"
+publicUrl = "http://localhost:3000" 
 
 [auth]
 adminEmail = "admin@example.com"
@@ -10,6 +10,7 @@ knownRoles = ["ADMIN/Administrator",
 	"USER_ADMIN/User Admin",
 	"MODERATOR/Moderator",	
 	"EDITOR/Editor",
+	"MANAGER/Manager",	
 	"VOLUNTEER/Volunteer",
 	"GUEST/Guest",
 	"REGISTERED/Registered",

@@ -12,6 +12,8 @@ const (
 	KeyAdminEmail     = "auth.adminEmail"
 	KeyAnonymousEmail = "auth.anonymousEmail"
 	KeyKnownRoles     = "auth.knownRoles"
+
+	KeyPublicURL = "publicUrl"
 )
 
 /* KNOWN VALUES */
