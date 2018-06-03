@@ -21,3 +21,10 @@ type Role struct {
 	RoleID string `gorm:"primary_key" json:"roleId"`
 	Label  string `gorm:"" json:"label"`
 }
+
+// Group might be a user or a role
+type Group struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+	Type  string `json:"type"`
+}

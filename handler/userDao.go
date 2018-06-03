@@ -85,6 +85,50 @@ func GetRoles(c *gin.Context) {
 	c.JSON(200, gin.H{"roles": roles})
 }
 
+func GetGroups(c *gin.Context) {
+	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	var roles []model.Role
+	err := db.Find(&roles).Error
+
+	if err != nil {
+		log.Println("could not list roles: " + err.Error())
+		c.JSON(503, "cannot list roles")
+		return
+	}
+
+	var users []model.User
+	err = db.Find(&users).Error
+	if err != nil {
+		log.Println("could not list users: " + err.Error())
+		c.JSON(503, "cannot list users")
+		return
+	}
+
+	groups := make(map[string]model.Group, len(users)+len(roles))
+	for _, user := range users {
+		// FIXME 4.0 specific
+		// Implement a specific filter policy to return only assignable users
+		if user.Name != "" && user.Name != "Anonymous" {
+			groups[user.UserID] = model.Group{
+				ID:    user.UserID,
+				Label: user.Name,
+				Type:  "user",
+			}
+		}
+	}
+	for _, role := range roles {
+		if role.Label != "Anonymous" {
+			groups[role.RoleID] = model.Group{
+				ID:    role.RoleID,
+				Label: role.Label,
+				Type:  "group",
+			}
+		}
+	}
+
+	c.JSON(200, gin.H{"groups": groups})
+}
+
 /* CRUD */
 
 func CreateUser(c *gin.Context) {

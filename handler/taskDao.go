@@ -12,14 +12,18 @@ import (
 )
 
 func ListTasks(c *gin.Context) {
+
 	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
+	userID := c.MustGet(model.KeyUserID).(string)
+	roles := c.MustGet(model.KeyUserRoles).([]string)
 
 	tasks := []model.Task{}
 	var err error
 
 	catID := c.Query(model.KeyCategoryID)
 
-	// showAll := c.Query("showAll")
+	showAll := c.Query("showAll")
 	showClosed := c.Query("showClosed")
 
 	query := bson.M{}
@@ -27,18 +31,18 @@ func ListTasks(c *gin.Context) {
 		query[model.KeyCategoryID] = bson.RegEx{catID, ""}
 	}
 
+	if showAll != "true" {
+		query["managerId"] = map[string]interface{}{"$in": append(roles, userID)}
+	}
+
 	if !(showClosed == "true") {
 		query["closeDate"] = 0
 	}
 
-	// query := bson.M{"closeDate": 0}
-
-	err = db.C(model.TaskCollection).Find(query).Sort("-dueDate").All(&tasks)
+	err = db.C(model.TaskCollection).Find(query).Sort("-flags", "-dueDate").All(&tasks)
 	if err != nil {
 		c.Error(err)
 	}
-
-	// TODO handle filtering
 
 	c.JSON(200, gin.H{"tasks": tasks})
 }

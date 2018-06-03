@@ -79,6 +79,13 @@ func declareRoutes(r *gin.Engine) {
 		roles.GET("", handler.GetRoles)                      // query with params
 	}
 
+	// Groups
+	groups := r.Group(model.ApiPrefix + "groups")
+	{
+		groups.OPTIONS("", handler.DoNothing) // POST
+		groups.GET("", handler.GetGroups)     // query with params
+	}
+
 	// Posts
 	posts := r.Group(model.ApiPrefix + "posts")
 	{
