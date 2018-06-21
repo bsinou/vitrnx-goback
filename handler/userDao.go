@@ -3,7 +3,6 @@ package handler
 // Thanks @etiennerouzeaud to https://gist.github.com/EtienneR/ed522e3d31bc69a9dec3335e639fcf60 && https://medium.com/@etiennerouzeaud/how-to-create-a-basic-restful-api-in-go-c8e032ba3181
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -22,10 +21,11 @@ import (
 /* QUERIES */
 
 func GetUsers(c *gin.Context) {
+
 	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
-	datadb := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
 	var users []model.User
-	err := db.Preload("Roles").Find(&users).Error
+	err := db.Preload("Roles").Order("created_at desc").Find(&users).Error
 	if err != nil {
 		log.Println("could not list users: " + err.Error())
 		c.JSON(503, "cannot list users")
@@ -34,40 +34,60 @@ func GetUsers(c *gin.Context) {
 
 	updatedUsers := make([]model.User, len(users))
 	for i, user := range users {
-
-		meta := make(map[string]interface{})
-		query := bson.M{"authorId": bson.RegEx{user.UserID, ""}}
-		commentCount, err := datadb.C(model.CommentCollection).Find(query).Count()
+		// TODO also filter by rights
+		meta, err := getUserMeta(c, user)
 		if err != nil {
-			msg := fmt.Sprintf("could not list comments for user %s: %s", user.Email, err.Error())
-			log.Println(msg)
-			c.JSON(503, msg)
+			log.Println(err.Error())
+			c.JSON(503, err.Error())
 			return
 		}
-		meta["commentCount"] = commentCount
-
-		var presence model.Presence
-		query = bson.M{model.KeyUserID: bson.RegEx{user.UserID, ""}}
-		err = datadb.C(model.PresenceCollection).Find(query).One(&presence)
-		if err != nil {
-			if err.Error() != "not found" {
-				msg := fmt.Sprintf("could not list presence for user %s: %s", user.Email, err.Error())
-				log.Println(msg)
-				c.JSON(503, msg)
-				return
-			}
-		} else {
-			meta["presence"] = presence
-		}
-
-		metaAsBytes, err := json.Marshal(&meta)
-		fmt.Println("Enriching user with following meta: " + string(metaAsBytes))
 		user.Meta = meta
 		updatedUsers[i] = user
-		// TODO also filter by rights
 	}
 
 	c.JSON(200, gin.H{"users": updatedUsers})
+}
+
+func getUserMeta(c *gin.Context, user model.User) (map[string]interface{}, error) {
+	datadb := c.MustGet(model.KeyDataDb).(*mgo.Database)
+
+	meta := make(map[string]interface{})
+	query := bson.M{"authorId": bson.RegEx{user.UserID, ""}}
+	commentCount, err := datadb.C(model.CommentCollection).Find(query).Count()
+	if err != nil {
+		return meta, fmt.Errorf("could not list comments for user %s: %s", user.Email, err.Error())
+	}
+	meta["commentCount"] = commentCount
+
+	var presence model.Presence
+	query = bson.M{model.KeyUserID: bson.RegEx{user.UserID, ""}}
+	err = datadb.C(model.PresenceCollection).Find(query).One(&presence)
+	if err != nil {
+		if err.Error() != "not found" {
+			return meta, fmt.Errorf("could not list presence for user %s: %s", user.Email, err.Error())
+		}
+	} else {
+		meta["presence"] = presence
+	}
+
+	return meta, nil
+}
+
+func GetDreamAddresses(c *gin.Context) {
+	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	var users []model.User
+	err := db.Find(&users).Error
+	if err != nil {
+		log.Println("could not list users to get addresses: " + err.Error())
+		c.JSON(503, "cannot list users")
+		return
+	}
+
+	addresses := make([]string, len(users))
+	for i, user := range users {
+		addresses[i] = user.Address
+	}
+	c.JSON(200, gin.H{"addresses": addresses})
 }
 
 func GetRoles(c *gin.Context) {
@@ -232,6 +252,14 @@ func GetUser(c *gin.Context) {
 	gorm.WithUserRoles(&user)
 
 	if user.ID != 0 {
+		meta, err := getUserMeta(c, user)
+		if err != nil {
+			log.Println(err.Error())
+			c.JSON(503, err.Error())
+			return
+		}
+		user.Meta = meta
+
 		c.JSON(200, gin.H{"user": user})
 	} else {
 		c.JSON(404, gin.H{"error": "User not found"})

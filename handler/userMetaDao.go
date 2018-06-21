@@ -38,7 +38,6 @@ func GuestTotal(c *gin.Context) {
 	db := c.MustGet(model.KeyDataDb).(*mgo.Database)
 
 	presences := []model.Presence{}
-	fmt.Println("Here")
 
 	err := db.C(model.PresenceCollection).Find(nil).All(&presences)
 	if err != nil {

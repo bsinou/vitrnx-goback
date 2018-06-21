@@ -56,12 +56,15 @@ func declareRoutes(r *gin.Engine) {
 	// UserMeta
 	meta := r.Group(model.ApiPrefix + "usermeta")
 	presence := r.Group(model.ApiPrefix + "presence")
+	da := r.Group(model.ApiPrefix + "dreamAddresses")
+
 	{
 		meta.Use(addUserMeta())
 		meta.OPTIONS("", handler.DoNothing)
 		meta.OPTIONS(":"+model.KeyUserID, handler.DoNothing)
 		presence.OPTIONS("/guestsByDay", handler.DoNothing)
 		presence.OPTIONS("/guestNb", handler.DoNothing)
+		da.OPTIONS("", handler.DoNothing)
 
 		presence.GET("/guestsByDay", handler.ListGuestsByDay)
 		presence.GET("/guestNb", handler.GuestTotal)
@@ -69,6 +72,8 @@ func declareRoutes(r *gin.Engine) {
 		// REST
 		meta.GET(":"+model.KeyUserID, handler.ReadPresence)
 		meta.POST(":"+model.KeyUserID, applyUserMetaPolicies(), handler.PutPresence)
+		da.GET("", handler.GetDreamAddresses)
+
 	}
 
 	// Roles
