@@ -1,4 +1,3 @@
-// Package dummydata provides convenience data to test the backend
 package dummydata
 
 // TestUser1 is a simple user.

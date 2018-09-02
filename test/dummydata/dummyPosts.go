@@ -29,7 +29,7 @@ var TestPost2 = `{
 var TestPost3 = `{ 
 	"isPublic" : false,
 	"path" : "simple-test",
-	"title" : "Dupplicate path",
+	"title" : "Duplicate path",
 	"tags" : "news tags",
 	"thumb" : "test.jpg",
 	"hero" : "test.jpg",
