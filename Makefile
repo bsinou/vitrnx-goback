@@ -1,7 +1,7 @@
 GOBUILD=go build
 ENV=env GOOS=linux
 
-CurrentVersion=0.4.0
+CurrentVersion=0.5.0
 
 all: clean build
 
