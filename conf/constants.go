@@ -3,6 +3,7 @@ package conf
 /* MAIN CONSTANTS */
 
 const (
+	// BaseName holds a constant to the vitrnx name in case it should ever be changed.
 	BaseName = "vitrnx"
 )
 

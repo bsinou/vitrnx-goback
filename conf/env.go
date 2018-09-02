@@ -19,7 +19,7 @@ var (
 	// in the resulting binary when doing 'make main'
 
 	// VitrnxVersion exposes current version of the backend
-	VitrnxVersion = "0.1.4-SNAPSHOT"
+	VitrnxVersion = "0.5.0"
 	// BuildTimestamp exposes running app build time stamp
 	BuildTimestamp = ""
 	// BuildRevision exposes the git id that was at master origin head at the time of building

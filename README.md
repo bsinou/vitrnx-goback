@@ -4,6 +4,6 @@
 [![Build Status](https://travis-ci.org/bsinou/vitrnx-goback.svg?branch=master)](https://travis-ci.org/bsinou/vitrnx-goback)
  [![Go Report Card](https://goreportcard.com/badge/github.com/bsinou/vitrnx-goback)](https://goreportcard.com/report/github.com/bsinou/vitrnx-goback)
 
-Simple Go backend for the Vitrn X front.
+Simple Go backend for the vitrnx front.
 
 It is also a sample project to experiment with Go language.

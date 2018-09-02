@@ -1,4 +1,4 @@
-# Infrastructure resources 
+# Infrastructure resources
 
 ## Install on CentOS
 
@@ -43,7 +43,7 @@ chown -R caddy:root /etc/ssl/caddy
 sudo chown -R caddy:root /etc/ssl/caddy
 sudo chmod 770 /etc/ssl/caddy
 
-# Create and populate a caddy file 
+# Create and populate a caddy file
 sudo touch /etc/caddy/Caddyfile
 sudo chown -R caddy.root /etc/ssl/caddy
 sudo chown caddy.caddy /etc/caddy/Caddyfile
@@ -63,7 +63,6 @@ sudo firewall-cmd --permanent --zone=public --add-service=https
 sudo firewall-cmd --reload
 ```
 
-
 ## Deploy
 
 ### On a brand new server
@@ -78,4 +77,3 @@ sudo mv firebase-apiCert.json /var/lib/vitrnx/conf
 # Add a log folder
 
 ```
-

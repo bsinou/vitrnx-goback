@@ -18,7 +18,7 @@ var (
 // StartCmd represents the start command
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the VitrnX Backend",
+	Short: "Start the vitrnx backend",
 	Long:  ``,
 
 	PreRun: func(cmd *cobra.Command, args []string) {

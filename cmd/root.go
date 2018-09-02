@@ -16,7 +16,7 @@ var ()
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "vitrnx-goback",
-	Short: "Simple Go Backend for the VitrnX Project",
+	Short: "Simple Go Backend for the vitrnx Project",
 	Long: `
 `,
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -24,7 +24,7 @@ var RootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
 		if args[0] == "" {
-			cmd.Println("no instance name provided, canot launch Vitrnx Backend")
+			cmd.Println("no instance name provided, cannot launch the vitrnx Backend")
 			os.Exit(1)
 		}
 		conf.VitrnxInstanceID = args[0]
