@@ -3,19 +3,20 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/mongodb"
 	"github.com/bsinou/vitrnx-goback/route"
-	"github.com/spf13/cobra"
 )
 
 var (
 // wg sync.WaitGroup
 )
 
-// StartCmd represents the start command
+// StartCmd launches the vitrnx backend process.
 var StartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the vitrnx backend",
