@@ -1,5 +1,15 @@
 # Infrastructure resources
 
+## Retrieve API Cert for firebase
+
+to add Firebase to your app, please follow instruction found on [firebase documentation website](https://firebase.google.com/docs/admin/setup) 
+
+>To use the Firebase Admin SDKs, you'll need a Firebase project, a service account to communicate with the Firebase service, and >a configuration file with your service account's credentials.
+>
+> - If you don't already have a Firebase project, add one in the Firebase console.
+> - Navigate to the Service Accounts tab in your project's settings page.
+> - Click the Generate New Private Key button at the bottom of the Firebase Admin SDK section of the Service Accounts tab.
+
 ## Install on CentOS
 
 ### Install MongoDB

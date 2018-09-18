@@ -79,7 +79,7 @@ func GetDataFolderPath() string {
 		// Deployed on Linux
 		filepath.Join("/var", "lib", BaseName, VitrnxInstanceID, "data"),
 		// In User Home on linux
-		// filepath.Join("$HOME", ".config", BaseName, VitrnxInstanceID, "data"),
+		filepath.Join(os.Getenv("HOME"), ".config", BaseName, VitrnxInstanceID, "data"),
 		// In source code in dev mode
 		filepath.Join(".", "data"),
 	}

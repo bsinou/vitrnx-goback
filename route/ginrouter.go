@@ -12,21 +12,19 @@ import (
 
 func StartRouter() {
 	r := gin.Default()
-	r.Use(loggingHandler(), cors(), checkCredentials(), connect())
+	r.Use(loggingHandler(), cors())
 	declareRoutes(r)
 	log.Fatal(r.Run(":8888"))
-
-	// debug router without auth
-	// x := gin.Default()
-	// x.Use(loggingHandler(), cors(), Connect())
-	// declareRoutes(x)
-	// log.Fatal(x.Run(":9999"))
 }
 
 func declareRoutes(r *gin.Engine) {
 
+	// Must be logged in to access api entry point
+	apiG := r.Group(model.ApiPrefix)
+	apiG.Use(checkCredentials(), connect())
+
 	// Authentication
-	authG := r.Group(model.ApiPrefix + "auth")
+	authG := apiG.Group("/auth")
 	{
 		// authG.Use()
 		authG.OPTIONS("login", handler.DoNothing) // POST
@@ -34,7 +32,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Users
-	user := r.Group(model.ApiPrefix + "users")
+	user := apiG.Group("/users")
 	{
 		// Configure wrappers for this group
 		// user.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta())
@@ -54,9 +52,9 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// UserMeta
-	meta := r.Group(model.ApiPrefix + "usermeta")
-	presence := r.Group(model.ApiPrefix + "presence")
-	da := r.Group(model.ApiPrefix + "dreamAddresses")
+	meta := apiG.Group("/usermeta")
+	presence := apiG.Group("/presence")
+	da := apiG.Group("/dreamAddresses")
 
 	{
 		meta.Use(addUserMeta())
@@ -77,7 +75,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Roles
-	roles := r.Group(model.ApiPrefix + "roles")
+	roles := apiG.Group("/roles")
 	{
 		roles.OPTIONS("", handler.DoNothing)                 // POST
 		roles.OPTIONS(":"+model.KeyMgoID, handler.DoNothing) // PUT, DELETE
@@ -85,14 +83,14 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Groups
-	groups := r.Group(model.ApiPrefix + "groups")
+	groups := apiG.Group("/groups")
 	{
 		groups.OPTIONS("", handler.DoNothing) // POST
 		groups.GET("", handler.GetGroups)     // query with params
 	}
 
 	// Posts
-	posts := r.Group(model.ApiPrefix + "posts")
+	posts := apiG.Group("/posts")
 	{
 		// Configure wrappers for this group
 		// posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallPost(), applyPostPolicies())
@@ -113,7 +111,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Comments
-	comments := r.Group(model.ApiPrefix + "comments")
+	comments := apiG.Group("/comments")
 	{
 		// comments.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallComment(), applyCommentPolicies())
 		comments.Use(addUserMeta(), unmarshallComment(), applyCommentPolicies())
@@ -127,7 +125,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// Tasks
-	tasks := r.Group(model.ApiPrefix + "tasks")
+	tasks := apiG.Group("/tasks")
 	{
 		tasks.Use(addUserMeta(), unmarshallTask(), applyTaskPolicies())
 		tasks.OPTIONS("", handler.DoNothing)
@@ -142,4 +140,18 @@ func declareRoutes(r *gin.Engine) {
 		tasks.DELETE(":"+model.KeyMgoID, handler.DeleteTask)
 	}
 
+	// PUBLIC ENTRY POINT
+
+	pubG := r.Group(model.PublicPrefix)
+	// pubG.Use(checkCredentials(), connect())
+
+	// Basic test
+	tests := pubG.Group("/ab-check")
+	{
+		// tests.Use(addUserMeta(), unmarshall... , applyPolicies...)
+		tests.OPTIONS("", handler.DoNothing)
+
+		// REST
+		tests.GET("", handler.BasicCheck)
+	}
 }

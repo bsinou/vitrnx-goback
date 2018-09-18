@@ -1,9 +1,10 @@
 package model
 
-// This file centralises constanst that should be instance specific
+// This file centralises constants that should be instance specific
 // but that are still hard coded in a first approach to shorten implementation of v0
 
-const ApiPrefix = "/api/"
+const ApiPrefix = "/api"
+const PublicPrefix = "/pub"
 
 // Known Roles
 const RoleAdmin = "ADMIN"
