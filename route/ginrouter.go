@@ -141,6 +141,7 @@ func declareRoutes(r *gin.Engine) {
 	}
 
 	// PUBLIC ENTRY POINT
+	// Anonymous users can only see public posts, static pages and a few utils pages
 
 	pubG := r.Group(model.PublicPrefix)
 	// pubG.Use(checkCredentials(), connect())
