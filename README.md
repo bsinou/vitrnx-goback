@@ -45,3 +45,31 @@ cp firebase-apiCert.json ~/.config/vitrnx/<instanceID>/firebase-apiCert.json
 # start the server
 go run main.go start upala
 ```
+
+Install on a CentOS server with Go.
+
+```sh
+cd go/src/github.com/bsinou/
+git clone https://bsinou@github.com/bsinou/vitrnx-goback.git
+
+go get firebase.google.com/go gopkg.in/mgo.v2/bson gopkg.in/mgo.v2 github.com/spf13/viper github.com/spf13/cobra github.com/mattn/go-sqlite3
+
+cd vitrnx-goback/
+make dev
+
+sudo yum install mongodb-server mongodb
+sudo systemctl start mongod
+sudo systemctl enable mongod
+
+sudo mkdir -p /etc/vitrnx/upala
+sudo mkdir -p /var/lib/vitrnx/upala/data
+sudo chown -R vitrnx.vitrnx /var/lib/vitrnx/upala/data/
+
+# ON LOCAL WORKSTATION
+scp  -P 2102 vitrnx.toml  bsinou@vps535638.ovh.net:/etc/vitrnx/upala
+
+# Back on the server
+cd go/src/github.com/bsinou/vitrnx-goback
+go run main.go start upala
+
+```

@@ -2,7 +2,7 @@
 
 ## Retrieve API Cert for firebase
 
-to add Firebase to your app, please follow instruction found on [firebase documentation website](https://firebase.google.com/docs/admin/setup) 
+to add Firebase to your app, please follow instruction found on [firebase documentation website](https://firebase.google.com/docs/admin/setup).
 
 >To use the Firebase Admin SDKs, you'll need a Firebase project, a service account to communicate with the Firebase service, and >a configuration file with your service account's credentials.
 >
@@ -29,7 +29,8 @@ On May 1st 2018, I followed [this post](https://www.hugeserver.com/kb/install-ca
 - insure your DNS is correctly set and known
 - do not forget to configure firewall.
 
-Otherwise letsencrypt registration process will fail 5 times and you will have to wait for an hour to try again. You might also use the ltsencrypt staging env during this phase to insure everything is set correctly before trying on the prod environment.
+You should use the Let's Encrypt staging environment to test your setup and insure everything is set correctly before trying in the production environment.
+If the Let's Encrypt registration process fail 5 times, you have to wait for an hour to try again.  
 
 ```sh
 curl -s https://getcaddy.com | bash -s personal

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/conf"
@@ -36,6 +37,7 @@ var StartCmd = &cobra.Command{
 		}
 
 		cmd.Print(fmt.Sprintf("\n\n%s - Vitrnx Go Backend v%s (built %s)\n ==> Starting in %s mode.\n\n", conf.VitrnxInstanceID, conf.VitrnxVersion, ts, conf.Env))
+		cmd.Print(fmt.Sprintf("Current admin is %s\n", viper.GetString(conf.KeyAdminEmail)))
 
 		// TODO Implement a better way to initialise services and manage clean shutdown
 		gorm.InitGormRepo()

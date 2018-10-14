@@ -104,6 +104,22 @@ func connect() gin.HandlerFunc {
 	}
 }
 
+// pubconnect middleware makes the public db available for each handler
+func pubconnect() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		// Data
+		// TODO: rather use a READ ONLY session
+		s := mongodb.Session.Clone()
+		defer s.Close()
+		c.Set(model.KeyDataDb, s.DB(mongodb.Mongo.Database))
+
+		// Next must be explicitely called here
+		// so that the db session is released *AFTER* next handlers processing
+		c.Next()
+	}
+}
+
 /* USER */
 
 // TODO Check:
@@ -269,6 +285,8 @@ func applyPostPolicies() gin.HandlerFunc {
 		// 	c.JSON(503, gin.H{"error": "Unauthorized"})
 		// 	c.Abort()
 		// } else
+
+		fmt.Printf("Applying post policy. RM: %s\n", rm)
 
 		if rm == "POST" || rm == "DELETE" {
 			userID := c.MustGet(model.KeyUserID).(string)

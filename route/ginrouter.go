@@ -10,6 +10,7 @@ import (
 	"github.com/bsinou/vitrnx-goback/model"
 )
 
+// StartRouter starts the main gin gonic router after configuration.
 func StartRouter() {
 	r := gin.Default()
 	r.Use(loggingHandler(), cors())
@@ -144,7 +145,9 @@ func declareRoutes(r *gin.Engine) {
 	// Anonymous users can only see public posts, static pages and a few utils pages
 
 	pubG := r.Group(model.PublicPrefix)
-	// pubG.Use(checkCredentials(), connect())
+
+	// TODO add limited credentials to also track anonymous user to prevent DDOS and other attacks
+	pubG.Use(pubconnect())
 
 	// Basic test
 	tests := pubG.Group("/ab-check")
@@ -154,5 +157,18 @@ func declareRoutes(r *gin.Engine) {
 
 		// REST
 		tests.GET("", handler.BasicCheck)
+	}
+
+	// Posts
+	pposts := pubG.Group("/posts")
+	{
+		// Configure wrappers for this group
+		// posts.Use(loggingHandler(), cors(), checkCredentials(), Connect(), addUserMeta(), unmarshallPost(), applyPostPolicies())
+		pposts.Use(unmarshallPost())
+
+		// REST
+		pposts.GET("", handler.ListPosts)                                   // query with params
+		pposts.GET(":"+model.KeyPath, handler.ReadPost)                     // get one
+		pposts.GET(":"+model.KeyPath+"/comments", handler.ListPostComments) // get post comments
 	}
 }
