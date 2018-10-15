@@ -16,9 +16,8 @@ var (
 )
 
 const (
-	// MongoDBUrl is the default mongodb url that will be used to connect to the
-	// database.
-	MongoDBUrl = "mongodb://localhost:27017/test_store"
+	// defaultMongoURL defines a failover connection forthe tests.
+	defaultMongoURL = "mongodb://localhost:27017/test_store"
 )
 
 // init connects to mongodb
@@ -26,7 +25,7 @@ func init() {
 	uri := os.Getenv("MONGODB_URL")
 
 	if len(uri) == 0 {
-		uri = MongoDBUrl
+		uri = defaultMongoURL
 	}
 
 	mongo, err := mgo.ParseURL(uri)
@@ -36,7 +35,7 @@ func init() {
 		panic(err.Error())
 	}
 	s.SetSafe(&mgo.Safe{})
-	fmt.Println("Connected to", uri)
+	fmt.Println("In dummydata, connected to ", uri)
 	MgoSession = s
 	Mongo = mongo
 }

@@ -19,6 +19,7 @@ var TestUser1 = `{
 		}
 	`
 
+// TestUser2 is another basic user.
 var TestUser2 = `{
 		"userId":"test2",
 		"name":"John",

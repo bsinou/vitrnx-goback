@@ -5,6 +5,8 @@ import (
 	"os"
 
 	mgo "gopkg.in/mgo.v2"
+
+	"github.com/bsinou/vitrnx-goback/conf"
 )
 
 var (
@@ -16,9 +18,8 @@ var (
 )
 
 const (
-	// MongoDBUrl is the default mongodb url that will be used to connect to the
-	// database.
-	MongoDBUrl = "mongodb://localhost:27017/vitrnx_store"
+	// defaultMongoURL is the failover URL for new empty instances
+	defaultMongoURL = "mongodb://localhost:27017/vitrnx_store"
 )
 
 // init connects to mongodb
@@ -37,15 +38,20 @@ const (
 // 	}
 // 	s.SetSafe(&mgo.Safe{})
 // 	fmt.Println("Connected to", uri)
-// 	Session = s
-// 	Mongo = mongo
+// 	Session = sy
+// 	Mongo = mongoy
 // }
 
+// InitMongoConnection initialises a session with R/W privileges.
 func InitMongoConnection() {
 	uri := os.Getenv("MONGODB_URL")
 
 	if len(uri) == 0 {
-		uri = MongoDBUrl
+		uri = "mongodb://localhost:27017/" + conf.VitrnxInstanceID + "_store"
+	}
+
+	if len(uri) == 0 {
+		uri = defaultMongoURL
 	}
 
 	mongo, err := mgo.ParseURL(uri)
