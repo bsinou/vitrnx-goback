@@ -56,3 +56,14 @@ For other distros please refer to [this blog post](https://help.github.com/artic
 - [A simple and concise tutorial](https://robots.thoughtbot.com/keeping-a-github-fork-updated)
 - [playing with github api](https://medium.com/@durgaprasadbudhwani/playing-with-github-api-with-go-github-golang-library-83e28b2ff093)
 - [go-github lib road map](https://docs.google.com/spreadsheets/d/1wlHnoJSAN01nXUUF1JobsaKO4mJjAwZNWK8L_4ZSlls/edit#gid=0)
+
+### Manage tags
+
+The key is discovering that you can delete a tag locally, then use git fetch to "get it back" from the remote server. If the tag doesn't exist on the remote, then it will remain deleted.
+
+Thus, to remove all local tags, type this:
+
+```sh
+git tag -l | xargs git tag -d
+git fetch --tags
+```
