@@ -9,12 +9,19 @@ const (
 
 /* KEYS (to retrieve values via Viper) */
 const (
-	KeyEnvType        = "env"
+	KeyEnvType = "env"
+	KeyPort    = "port"
+
 	KeyAdminEmail     = "auth.adminEmail"
 	KeyAnonymousEmail = "auth.anonymousEmail"
 	KeyKnownRoles     = "auth.knownRoles"
+	KeyKnownAdmins    = "auth.knownAdmins"
 
-	KeyPublicURL = "publicUrl"
+	KeyPublicURL  = "publicUrl"
+	KeyBackendURL = "backendUrl"
+
+	KeyGetAuthDN     = "authDN"
+	KeyGetAuthSuffix = "authSuffix"
 )
 
 /* KNOWN VALUES */
@@ -28,4 +35,7 @@ const (
 	EnvStaging = "staging"
 	// EnvProd is the production environment
 	EnvProd = "prod"
+
+	// OIDC Entrypoints
+	JWKSWellKnownSuffix = ".well-known/jwks.json"
 )

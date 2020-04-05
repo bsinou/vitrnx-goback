@@ -1,24 +1,6 @@
 # Infrastructure resources
 
-## Retrieve API Cert for firebase
-
-to add Firebase to your app, please follow instruction found on [firebase documentation website](https://firebase.google.com/docs/admin/setup).
-
->To use the Firebase Admin SDKs, you'll need a Firebase project, a service account to communicate with the Firebase service, and >a configuration file with your service account's credentials.
->
-> - If you don't already have a Firebase project, add one in the Firebase console.
-> - Navigate to the Service Accounts tab in your project's settings page.
-> - Click the Generate New Private Key button at the bottom of the Firebase Admin SDK section of the Service Accounts tab.
-
 ## Install on CentOS
-
-### Install MongoDB
-
-```sh
-sudo yum install mongodb-server mongodb
-sudo systemctl start mongod
-sudo systemctl enable mongod
-```
 
 ### Caddy
 
@@ -87,4 +69,34 @@ sudo mv firebase-apiCert.json /var/lib/vitrnx/conf
 
 # Add a log folder
 
+```
+
+## Legacy
+
+Below are a few hints from the time when we first experimented with MongoDB as backend for the blog post and Google firebase as OAuth provider.
+
+## Retrieve API Cert for firebase
+
+to add Firebase to your app, please follow instruction found on [firebase documentation website](https://firebase.google.com/docs/admin/setup).
+
+>To use the Firebase Admin SDKs, you'll need a Firebase project, a service account to communicate with the Firebase service, and >a configuration file with your service account's credentials.
+>
+> - If you don't already have a Firebase project, add one in the Firebase console.
+> - Navigate to the Service Accounts tab in your project's settings page.
+> - Click the Generate New Private Key button at the bottom of the Firebase Admin SDK section of the Service Accounts tab.
+
+## Install MongoDB
+
+Main problem with MongoDB is that it necessitates a *lot* of resources, even when idle.
+It is then a waste of resources for a small blog that only serves a few requests (up until at least ~1000) a day.
+We then decided to rather use a single SQL lite instance.
+
+Anyway, you might find here the instructions [to install on Ubuntu 18.04 - Bionic Beaver](https://linuxconfig.org/how-to-install-latest-mongodb-on-ubuntu-18-04-bionic-beaver-linux).
+
+On CentOS 7+, simply do:
+
+```sh
+sudo yum install mongodb-server mongodb
+sudo systemctl start mongod
+sudo systemctl enable mongod
 ```

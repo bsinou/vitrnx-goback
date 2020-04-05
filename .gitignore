@@ -1,26 +1,26 @@
+# our additions
+.project
+conf/vitrnx.toml
+
+# various binaries
+main
+vitrnx*
+upala
+
+
+### Are lines below still relevant: to delete?
+
+test/backup/*.json
+test/backup/*.db
 # Binaries for programs and plugins
 *.exe
 *.dll
 *.so
 *.dylib
-
 # Test binary, build with `go test -c`
 *.test
-
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
-
-
-# our additions
-/.project
-/vitrnX
-/debug
-/main
-/data/
-/conf/firebase-apiCert.json
-/conf/vitrnx.toml
-
-vitrnx-goback
+setup-variables.sh

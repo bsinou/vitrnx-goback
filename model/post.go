@@ -1,34 +1,31 @@
 package model
 
-import (
-	"gopkg.in/mgo.v2/bson"
-)
+import "time"
 
-const (
-	// PostCollection holds the name of the post collection
-	PostCollection = "posts"
-)
-
-// Post model
+// Post model for the database
 type Post struct {
-	ID       bson.ObjectId `json:"id,omitempty"  bson:"id,omitempty"`
-	Date     int64         `json:"date,omitempty" bson:"date"`
-	Path     string        `json:"path" binding:"required" bson:"path"`
-	Title    string        `json:"title" binding:"required" bson:"title"`
-	AuthorID string        `json:"authorId" bson:"authorId"`
-	Author   string        `json:"author" bson:"author"`
-	Tags     string        `json:"tags" bson:"tags"`
-	Desc     string        `json:"desc" bson:"desc"`
-	Hero     string        `json:"hero" binding:"required" bson:"hero"`
-	Thumb    string        `json:"thumb" binding:"required" bson:"thumb"`
-	Body     string        `json:"body" bson:"body"`
-	Audience string        `json:"audience" bson:"audience"`
-	Weight   int           `json:"weight,omitempty" bson:"weight"`
+	// Usually included by extending the default model
+	// gorm.Model
+	ID        uint       `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt"`
 
-	CreatedOn int64  `json:"createdOn,omitempty" bson:"createdOn"`
-	UpdatedOn int64  `json:"updatedOn,omitempty" bson:"updatedOn"`
-	UpdatedBy string `json:"updatedBy" bson:"updatedBy"`
+	// Model specific fields
+	PublishedAt *time.Time `json:"publishedAt,omitempty"`
+	Slug        string     `json:"slug"`
+	Title       string     `json:"title"`
+	AuthorID    string     `json:"authorId"`
+	Tags        string     `json:"tags"`
+	Desc        string     `json:"desc"`
+	Hero        string     `json:"hero"`
+	Thumb       string     `json:"thumb"`
+	Body        string     `json:"body"`
+	Audience    string     `json:"audience,omitempty"`
+	Weight      int        `json:"weight,omitempty"`
+	UpdatedBy   string     `json:"updatedBy,omitempty" `
 
 	// Convenience fields to communicate with the front end. Not persisted.
-	CommentCount int `json:"commentCount" bson:"-"`
+	Author       string `gorm:"-" json:"author"`
+	CommentCount int    `gorm:"-" json:"commentCount"`
 }
