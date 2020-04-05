@@ -24,3 +24,6 @@
 /conf/vitrnx.toml
 
 vitrnx-goback
+setup-variables.sh
+test/backup/*.db
+test/backup/*.json
