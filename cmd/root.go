@@ -13,8 +13,8 @@ import (
 
 var ()
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
+// rootCmd represents the base command when called without any subcommands.
+var rootCmd = &cobra.Command{
 	Use:   "vitrnx-goback",
 	Short: "Simple Go Backend for the vitrnx Project",
 	Long: `
@@ -38,7 +38,7 @@ var RootCmd = &cobra.Command{
 		// Load  configuration
 		viper.SetConfigName(conf.BaseName) // name of config file (without extension)
 		for _, path := range conf.GetKnownConfFolderPaths() {
-			fmt.Println("Adding confing path: " + path)
+			fmt.Println("Adding config path: " + path)
 			viper.AddConfigPath(path)
 		}
 		err := viper.ReadInConfig() // Find and read the config file
@@ -56,15 +56,15 @@ func init() {
 	viper.SetEnvPrefix("vitrnx")
 	viper.AutomaticEnv()
 
-	flags := RootCmd.PersistentFlags()
+	flags := rootCmd.PersistentFlags()
 	flags.StringP(conf.KeyEnvType, "e", "", "Override default environment mode defined by the build. Valid values are: dev, test, staging, prod")
-	viper.BindPFlag(conf.KeyEnvType, RootCmd.PersistentFlags().Lookup(conf.KeyEnvType))
+	viper.BindPFlag(conf.KeyEnvType, rootCmd.PersistentFlags().Lookup(conf.KeyEnvType))
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

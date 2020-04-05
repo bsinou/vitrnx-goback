@@ -16,6 +16,13 @@ type User struct {
 	Meta      map[string]interface{} `gorm:"-" json:"meta"`
 }
 
+// AuthRequest is used by the front end during the auth process.
+type AuthRequest struct {
+	Email             string `json:"email"`
+	Password          string `json:"password"`
+	ReturnSecureToken bool   `json:"returnSecureToken"`
+}
+
 // Role is used to manage permissions
 type Role struct {
 	RoleID string `gorm:"primary_key" json:"roleId"`
@@ -27,4 +34,9 @@ type Group struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
+}
+
+type Login struct {
+	User     string `form:"user" json:"user" xml:"user"  binding:"required"`
+	Password string `form:"password" json:"password" xml:"password" binding:"required"`
 }

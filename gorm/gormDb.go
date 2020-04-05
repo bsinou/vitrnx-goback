@@ -23,6 +23,7 @@ var (
 // InitGormRepo initialises a Gorm backend backed by SQLite
 func InitGormRepo() {
 	dataDirPath := conf.GetDataFolderPath()
+	// TODO rather use app id as prefix
 	dbFileAbsPath = filepath.Join(dataDirPath, "gorm-sqlite.db")
 	db := getDb()
 	createTableIfNeeded(db)
@@ -57,6 +58,11 @@ func createTableIfNeeded(db *gorm.DB) {
 	if !db.HasTable(&model.User{}) {
 		db.Set("gorm:table_options", "ENGINE=InnoDB")
 		db.CreateTable(&model.User{}, &model.Role{})
+	}
+
+	if !db.HasTable(&model.Post{}) {
+		db.Set("gorm:table_options", "ENGINE=InnoDB")
+		db.CreateTable(&model.Post{})
 	}
 
 	// initialise roles from config

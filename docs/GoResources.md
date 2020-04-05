@@ -34,9 +34,10 @@ Some videos
 ## High level concepts
 
 ### DevOps
+
 Some of the nowadays buzz words:
 
-- The [Twelve-Factor App](https://12factor.net/): some guidelines for architecture and devops put in place by the [Heroku](heroku.com) team. 
+- The [Twelve-Factor App](https://12factor.net/): some guidelines for architecture and devops put in place by the [Heroku](heroku.com) team.
 - [Managing config with TOML](https://karloespiritu.com/handling-configuration-files-in-go/) 
 
 ## HowTo-s
@@ -51,18 +52,18 @@ Some of the nowadays buzz words:
 On **CentOs 7**:
 
 - Download the arm64 archive from [GoLang website](https://golang.org/dl/)
-- Untar and move to `/usr/local/go1.10` (FI)
+- Untar and move to `/usr/local/go1.14` (FI)
 - Update the symbolic link `/usr/local/go`:
 
-```bash
+```sh
  cd /usr/local
  sudo rm go
- sudo ln -s go1.10 go
+ sudo ln -s go1.14 go
 ```
 
 **Note:** to ease plugin install, make the `/usr/local/go/bin` subfolder writable for all users
 
-```bash
+```sh
  sudo chmod -R a+rw go/bin
 ```
 
@@ -95,7 +96,7 @@ Protobuf is installed in the bin subfolder of the `/usr/local/go` folder, it mus
 
 ## Questions and answers
 
-Some resources that gather Q&A about go. Always good to refresh  one's mind
+Some resources that gather Q&A about go. Always good to refresh one's mind
 
-- 30 rather easy [questions](http://www.golangpro.com/2015/08/golang-interview-questions-answers.html) 
+- 30 rather easy [questions](http://www.golangpro.com/2015/08/golang-interview-questions-answers.html)
 - A [fun website](https://gophercises.com) with tutorial videos and exercices

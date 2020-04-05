@@ -6,10 +6,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/bsinou/vitrnx-goback/auth"
 	"github.com/bsinou/vitrnx-goback/conf"
 	"github.com/bsinou/vitrnx-goback/gorm"
-	"github.com/bsinou/vitrnx-goback/mongodb"
 	"github.com/bsinou/vitrnx-goback/route"
 )
 
@@ -17,8 +15,8 @@ var (
 // wg sync.WaitGroup
 )
 
-// StartCmd launches the vitrnx backend process.
-var StartCmd = &cobra.Command{
+// startCmd launches the vitrnx backend process.
+var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the vitrnx backend",
 	Long:  ``,
@@ -41,19 +39,17 @@ var StartCmd = &cobra.Command{
 
 		// TODO Implement a better way to initialise services and manage clean shutdown
 		gorm.InitGormRepo()
-		// TODO enhance: launch a sync with firebase on each startup
-		// it is not too gravious this is reintrant
-		auth.ListExistingUsers(nil)
 
-		mongodb.InitMongoConnection()
+		// // TODO enhance: launch a sync with firebase on each startup
+		// // it is not too gravious this is reintrant
+		// auth.ListExistingUsers(nil)
+
 		// start gin router
 		route.StartRouter()
 
-		// wg.Add(1)
-		// wg.Wait()
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(StartCmd)
+	rootCmd.AddCommand(startCmd)
 }

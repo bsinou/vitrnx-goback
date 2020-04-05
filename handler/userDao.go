@@ -8,21 +8,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jgorm "github.com/jinzhu/gorm"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-
-	"github.com/bsinou/vitrnx-goback/gorm"
-	"github.com/bsinou/vitrnx-goback/model"
 
 	// Use SQLite
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/bsinou/vitrnx-goback/gorm"
+	"github.com/bsinou/vitrnx-goback/model"
 )
 
 /* QUERIES */
 
 func GetUsers(c *gin.Context) {
 
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 
 	var users []model.User
 	err := db.Preload("Roles").Order("created_at desc").Find(&users).Error
@@ -34,67 +32,24 @@ func GetUsers(c *gin.Context) {
 
 	updatedUsers := make([]model.User, len(users))
 	for i, user := range users {
-		// TODO also filter by rights
-		meta, err := getUserMeta(c, user)
-		if err != nil {
-			log.Println(err.Error())
-			c.JSON(503, err.Error())
-			return
-		}
-		user.Meta = meta
+		// // TODO also filter by rights
+		// meta, err := getUserMeta(c, user)
+		// if err != nil {
+		// 	log.Println(err.Error())
+		// 	c.JSON(503, err.Error())
+		// 	return
+		// }
+		// user.Meta = meta
 		updatedUsers[i] = user
 	}
 
 	c.JSON(200, gin.H{"users": updatedUsers})
 }
 
-func getUserMeta(c *gin.Context, user model.User) (map[string]interface{}, error) {
-	datadb := c.MustGet(model.KeyDataDb).(*mgo.Database)
-
-	meta := make(map[string]interface{})
-	query := bson.M{"authorId": bson.RegEx{user.UserID, ""}}
-	commentCount, err := datadb.C(model.CommentCollection).Find(query).Count()
-	if err != nil {
-		return meta, fmt.Errorf("could not list comments for user %s: %s", user.Email, err.Error())
-	}
-	meta["commentCount"] = commentCount
-
-	var presence model.Presence
-	query = bson.M{model.KeyUserID: bson.RegEx{user.UserID, ""}}
-	err = datadb.C(model.PresenceCollection).Find(query).One(&presence)
-	if err != nil {
-		if err.Error() != "not found" {
-			return meta, fmt.Errorf("could not list presence for user %s: %s", user.Email, err.Error())
-		}
-	} else {
-		meta["presence"] = presence
-	}
-
-	return meta, nil
-}
-
-func GetDreamAddresses(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
-	var users []model.User
-	err := db.Find(&users).Error
-	if err != nil {
-		log.Println("could not list users to get addresses: " + err.Error())
-		c.JSON(503, "cannot list users")
-		return
-	}
-
-	addresses := make([]string, len(users))
-	for i, user := range users {
-		addresses[i] = user.Address
-	}
-	c.JSON(200, gin.H{"addresses": addresses})
-}
-
 func GetRoles(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	var roles []model.Role
 	err := db.Find(&roles).Error
-
 	if err != nil {
 		log.Println("could not list roles: " + err.Error())
 		c.JSON(503, "cannot list roles")
@@ -106,7 +61,7 @@ func GetRoles(c *gin.Context) {
 }
 
 func GetGroups(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	var roles []model.Role
 	err := db.Find(&roles).Error
 
@@ -152,7 +107,7 @@ func GetGroups(c *gin.Context) {
 /* CRUD */
 
 func CreateUser(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	user := c.MustGet(model.KeyEditedUser).(model.User)
 
 	var dflt model.Role
@@ -174,7 +129,7 @@ func CreateUser(c *gin.Context) {
 }
 
 func PatchUser(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	editedUser := c.MustGet(model.KeyEditedUser).(model.User)
 
 	var loadedUser model.User
@@ -207,7 +162,7 @@ func PatchUser(c *gin.Context) {
 }
 
 func PatchUserRoles(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	toEditUserID := c.Param("id")
 	retrievedRoles := c.MustGet(model.KeyEditedUserRoles).([]string)
 
@@ -238,7 +193,7 @@ func PatchUserRoles(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	id := c.Params.ByName(model.KeyUserID)
 	var user model.User
 	err := db.Preload("Roles").Where(&model.User{UserID: id}).First(&user).Error
@@ -251,23 +206,23 @@ func GetUser(c *gin.Context) {
 
 	gorm.WithUserRoles(&user)
 
-	if user.ID != 0 {
-		meta, err := getUserMeta(c, user)
-		if err != nil {
-			log.Println(err.Error())
-			c.JSON(503, err.Error())
-			return
-		}
-		user.Meta = meta
+	// if user.ID != 0 {
+	// 	meta, err := getUserMeta(c, user)
+	// 	if err != nil {
+	// 		log.Println(err.Error())
+	// 		c.JSON(503, err.Error())
+	// 		return
+	// 	}
+	// 	user.Meta = meta
 
-		c.JSON(200, gin.H{"user": user})
-	} else {
-		c.JSON(404, gin.H{"error": "User not found"})
-	}
+	// 	c.JSON(200, gin.H{"user": user})
+	// } else {
+	// 	c.JSON(404, gin.H{"error": "User not found"})
+	// }
 }
 
 func UpdateUser(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 
 	id := c.Params.ByName(model.KeyUserID)
 	var user model.User
@@ -298,7 +253,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	db := c.MustGet(model.KeyUserDb).(*jgorm.DB)
+	db := c.MustGet(model.KeyDb).(*jgorm.DB)
 	// toDeleteUser := c.MustGet(model.KeyUser).(model.User)
 
 	// toDeleteUserID := c.Param("id")

@@ -2,8 +2,16 @@
 
 # No prefix
 publicUrl = "http://localhost:3000" 
+# In development mode, we use the npm engine as proxy to the API.
+# Port 8888 that really exposes the API is defined in the package.json file.
+backendUrl = "http://localhost:3000"
+# DN and URI of the OAuth server that serves the token
+authDN = "http://localhost:8080"
+authSuffix = "oidc"
 
 [auth]
+# temporary hack
+knownAdmins = "admin"
 adminEmail = "admin@example.com"
 anonymousEmail = "guest@example.com"
 knownRoles = ["ADMIN/Administrator",  

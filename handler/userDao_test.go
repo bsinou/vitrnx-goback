@@ -6,9 +6,6 @@ import (
 	"os"
 	"testing"
 	"time"
-	// "time"
-
-	// "gopkg.in/mgo.v2/bson"
 
 	"github.com/bsinou/vitrnx-goback/gorm"
 	"github.com/bsinou/vitrnx-goback/model"
