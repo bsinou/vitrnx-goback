@@ -106,15 +106,22 @@ namespace FifoQueue.Storage
 
         private LinkedList<T> LoadFromDisk()
         {
-            if (!System.IO.File.Exists(_filePath))
-                return new LinkedList<T>();
+            try
+            {
+                if (!System.IO.File.Exists(_filePath))
+                    return new LinkedList<T>();
 
-            var json = System.IO.File.ReadAllText(_filePath);
-            if (string.IsNullOrWhiteSpace(json))
-                return new LinkedList<T>();
+                var json = System.IO.File.ReadAllText(_filePath);
+                if (string.IsNullOrWhiteSpace(json))
+                    return new LinkedList<T>();
 
-            var items = JsonSerializer.Deserialize<List<T>>(json, _jsonOptions);
-            return items is null ? new LinkedList<T>() : new LinkedList<T>(items);
+                var items = JsonSerializer.Deserialize<List<T>>(json, _jsonOptions);
+                return items is null ? new LinkedList<T>() : new LinkedList<T>(items);
+            }
+            catch (FileNotFoundException)
+            {
+                return new LinkedList<T>();
+            }
         }
 
         private void FlushToDisk()
@@ -128,8 +135,16 @@ namespace FifoQueue.Storage
 
             // Write to a temporary file first, then move atomically to prevent corruption.
             var tempPath = _filePath + ".tmp";
-            System.IO.File.WriteAllText(tempPath, json);
-            System.IO.File.Move(tempPath, _filePath, overwrite: true);
+            try
+            {
+                System.IO.File.WriteAllText(tempPath, json);
+                System.IO.File.Move(tempPath, _filePath, overwrite: true);
+            }
+            catch
+            {
+                try { System.IO.File.Delete(tempPath); } catch { /* best effort cleanup */ }
+                throw;
+            }
         }
     }
 }
