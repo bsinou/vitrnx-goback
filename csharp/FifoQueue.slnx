@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FifoQueue.Tests/FifoQueue.Tests.csproj" />
+  <Project Path="FifoQueue/FifoQueue.csproj" />
+</Solution>

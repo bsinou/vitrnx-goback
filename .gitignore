@@ -24,3 +24,7 @@ test/backup/*.db
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 setup-variables.sh
+
+# C# / .NET
+csharp/**/bin/
+csharp/**/obj/
